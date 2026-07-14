@@ -1,0 +1,82 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" fill="none">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0f0f23"/>
+      <stop offset="50%" style="stop-color:#1a1a3e"/>
+      <stop offset="100%" style="stop-color:#0f0f23"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#6366f1"/>
+      <stop offset="100%" style="stop-color:#8b5cf6"/>
+    </linearGradient>
+    <linearGradient id="shield" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#ffffff"/>
+      <stop offset="100%" style="stop-color:#e0e0ff"/>
+    </linearGradient>
+  </defs>
+  <!-- Background -->
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <!-- Grid pattern -->
+  <g opacity="0.05">
+    <line x1="0" y1="0" x2="0" y2="630" stroke="#6366f1" stroke-width="1"/>
+    <line x1="100" y1="0" x2="100" y2="630" stroke="#6366f1" stroke-width="1"/>
+    <line x1="200" y1="0" x2="200" y2="630" stroke="#6366f1" stroke-width="1"/>
+    <line x1="300" y1="0" x2="300" y2="630" stroke="#6366f1" stroke-width="1"/>
+    <line x1="400" y1="0" x2="400" y2="630" stroke="#6366f1" stroke-width="1"/>
+    <line x1="500" y1="0" x2="500" y2="630" stroke="#6366f1" stroke-width="1"/>
+    <line x1="600" y1="0" x2="600" y2="630" stroke="#6366f1" stroke-width="1"/>
+    <line x1="700" y1="0" x2="700" y2="630" stroke="#6366f1" stroke-width="1"/>
+    <line x1="800" y1="0" x2="800" y2="630" stroke="#6366f1" stroke-width="1"/>
+    <line x1="900" y1="0" x2="900" y2="630" stroke="#6366f1" stroke-width="1"/>
+    <line x1="1000" y1="0" x2="1000" y2="630" stroke="#6366f1" stroke-width="1"/>
+    <line x1="1100" y1="0" x2="1100" y2="630" stroke="#6366f1" stroke-width="1"/>
+    <line x1="1200" y1="0" x2="1200" y2="630" stroke="#6366f1" stroke-width="1"/>
+    <line x1="0" y1="0" x2="1200" y2="0" stroke="#6366f1" stroke-width="1"/>
+    <line x1="0" y1="100" x2="1200" y2="100" stroke="#6366f1" stroke-width="1"/>
+    <line x1="0" y1="200" x2="1200" y2="200" stroke="#6366f1" stroke-width="1"/>
+    <line x1="0" y1="300" x2="1200" y2="300" stroke="#6366f1" stroke-width="1"/>
+    <line x1="0" y1="400" x2="1200" y2="400" stroke="#6366f1" stroke-width="1"/>
+    <line x1="0" y1="500" x2="1200" y2="500" stroke="#6366f1" stroke-width="1"/>
+    <line x1="0" y1="600" x2="1200" y2="600" stroke="#6366f1" stroke-width="1"/>
+  </g>
+  <!-- Shield icon -->
+  <g transform="translate(80, 180)">
+    <path d="M60 0 L120 30 L120 90 C120 130 96 158 60 170 C24 158 0 130 0 90 L0 30 Z" fill="url(#shield)" opacity="0.15"/>
+    <path d="M60 15 L105 37.5 L105 82.5 C105 112.5 87 135 60 145 C33 135 15 112.5 15 82.5 L15 37.5 Z" fill="url(#shield)" opacity="0.3"/>
+    <path d="M42 82.5 L52.5 93 L78 67.5" stroke="url(#accent)" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  </g>
+  <!-- Title -->
+  <text x="260" y="250" font-family="Inter, -apple-system, system-ui, sans-serif" font-size="72" font-weight="700" fill="white">AI Compliance</text>
+  <text x="260" y="330" font-family="Inter, -apple-system, system-ui, sans-serif" font-size="72" font-weight="700" fill="white">Gateway</text>
+  <!-- Subtitle -->
+  <text x="260" y="385" font-family="Inter, -apple-system, system-ui, sans-serif" font-size="24" fill="#a78bfa">The open-source AI governance platform</text>
+  <!-- Badges row -->
+  <g transform="translate(260, 420)">
+    <rect x="0" y="0" width="80" height="30" rx="15" fill="#6366f1" opacity="0.2"/>
+    <text x="40" y="20" font-family="Inter, sans-serif" font-size="12" fill="#a78bfa" text-anchor="middle">HIPAA</text>
+    <rect x="90" y="0" width="65" height="30" rx="15" fill="#6366f1" opacity="0.2"/>
+    <text x="122" y="20" font-family="Inter, sans-serif" font-size="12" fill="#a78bfa" text-anchor="middle">GDPR</text>
+    <rect x="165" y="0" width="70" height="30" rx="15" fill="#6366f1" opacity="0.2"/>
+    <text x="200" y="20" font-family="Inter, sans-serif" font-size="12" fill="#a78bfa" text-anchor="middle">DPDP</text>
+    <rect x="245" y="0" width="85" height="30" rx="15" fill="#6366f1" opacity="0.2"/>
+    <text x="287" y="20" font-family="Inter, sans-serif" font-size="12" fill="#a78bfa" text-anchor="middle">PCI-DSS</text>
+    <rect x="340" y="0" width="60" height="30" rx="15" fill="#6366f1" opacity="0.2"/>
+    <text x="370" y="20" font-family="Inter, sans-serif" font-size="12" fill="#a78bfa" text-anchor="middle">SOC2</text>
+    <rect x="410" y="0" width="70" height="30" rx="15" fill="#6366f1" opacity="0.2"/>
+    <text x="445" y="20" font-family="Inter, sans-serif" font-size="12" fill="#a78bfa" text-anchor="middle">ABDM</text>
+  </g>
+  <!-- Stats -->
+  <g transform="translate(260, 480)">
+    <text x="0" y="0" font-family="Inter, sans-serif" font-size="16" fill="#6b7280">26 packages</text>
+    <circle cx="120" cy="-4" r="3" fill="#4b5563"/>
+    <text x="135" y="0" font-family="Inter, sans-serif" font-size="16" fill="#6b7280">300+ tests</text>
+    <circle cx="250" cy="-4" r="3" fill="#4b5563"/>
+    <text x="265" y="0" font-family="Inter, sans-serif" font-size="16" fill="#6b7280">41 rules</text>
+    <circle cx="360" cy="-4" r="3" fill="#4b5563"/>
+    <text x="375" y="0" font-family="Inter, sans-serif" font-size="16" fill="#6b7280">8 packs</text>
+  </g>
+  <!-- GitHub URL -->
+  <text x="600" y="590" font-family="Inter, sans-serif" font-size="18" fill="#6b7280" text-anchor="middle">github.com/vimarshakk/ai-compliance-gateway</text>
+  <!-- Accent line -->
+  <rect x="260" y="345" width="200" height="3" rx="1.5" fill="url(#accent)"/>
+</svg>

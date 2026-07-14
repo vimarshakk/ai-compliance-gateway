@@ -166,9 +166,9 @@ Contact [enterprise@acg.dev](mailto:enterprise@acg.dev) for enterprise support i
 
 ### Where can I get help?
 
-- **GitHub Discussions** — [Ask questions](https://github.com/mprudhvi145-bit/ai-compliance-gateway/discussions)
+- **GitHub Discussions** — [Ask questions](https://github.com/vimarshakk/ai-compliance-gateway/discussions)
 - **Documentation** — [docs.acg.dev](https://docs.acg.dev)
-- **Issues** — [Report bugs](https://github.com/mprudhvi145-bit/ai-compliance-gateway/issues)
+- **Issues** — [Report bugs](https://github.com/vimarshakk/ai-compliance-gateway/issues)
 
 ### How do I report a security vulnerability?
 

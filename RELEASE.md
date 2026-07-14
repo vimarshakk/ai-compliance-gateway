@@ -101,10 +101,10 @@ Docker images are published to GitHub Container Registry (GHCR):
 
 | Image | Tag Format |
 |-------|-----------|
-| `ghcr.io/mprudhvi145-bit/ai-compliance-gateway/gateway` | `v0.x.0`, `latest` |
-| `ghcr.io/mprudhvi145-bit/ai-compliance-gateway/admin` | `v0.x.0`, `latest` |
-| `ghcr.io/mprudhvi145-bit/ai-compliance-gateway/dashboard` | `v0.x.0`, `latest` |
-| `ghcr.io/mprudhvi145-bit/ai-compliance-gateway/evaluator` | `v0.x.0`, `latest` |
+| `ghcr.io/vimarshakk/ai-compliance-gateway/gateway` | `v0.x.0`, `latest` |
+| `ghcr.io/vimarshakk/ai-compliance-gateway/admin` | `v0.x.0`, `latest` |
+| `ghcr.io/vimarshakk/ai-compliance-gateway/dashboard` | `v0.x.0`, `latest` |
+| `ghcr.io/vimarshakk/ai-compliance-gateway/evaluator` | `v0.x.0`, `latest` |
 
 ### Multi-platform Builds
 
@@ -128,7 +128,7 @@ Docker images are built for:
 All Docker images are signed with cosign:
 
 ```bash
-cosign verify ghcr.io/mprudhvi145-bit/ai-compliance-gateway/gateway:v0.2.0
+cosign verify ghcr.io/vimarshakk/ai-compliance-gateway/gateway:v0.2.0
 ```
 
 ### SBOM
@@ -137,7 +137,7 @@ Software Bill of Materials is generated for each release:
 
 ```bash
 cosign verify-attestation --type spdxjson \
-  ghcr.io/mprudhvi145-bit/ai-compliance-gateway/gateway:v0.2.0
+  ghcr.io/vimarshakk/ai-compliance-gateway/gateway:v0.2.0
 ```
 
 ## Hotfixes

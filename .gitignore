@@ -28,6 +28,7 @@ pnpm-debug.log*
 # IDEs, editors, and OS-generated files
 .vscode/
 .idea/
+.obsidian/
 .DS_Store
 *.swp
 
@@ -36,3 +37,9 @@ coverage/
 
 # MLflow experiment data
 mlruns/
+
+# TLS certificates and private keys
+*.crt
+*.key
+*.pem
+*.p12

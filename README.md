@@ -10,20 +10,19 @@
 </p>
 
 <p align="center">
-  <a href="#quickstart">Quick Start</a> •
-  <a href="https://docs.acg.dev">Documentation</a> •
+  <a href="#quick-start">Quick Start</a> •
+  <a href="https://github.com/vimarshakk/ai-compliance-gateway/tree/main/docs">Documentation</a> •
   <a href="#features">Features</a> •
   <a href="#compliance-packs">Compliance Packs</a> •
   <a href="#architecture">Architecture</a> •
   <a href="#community">Community</a> •
-  <a href="https://github.com/mprudhvi145-bit/ai-compliance-gateway/releases">Releases</a>
+  <a href="https://github.com/vimarshakk/ai-compliance-gateway/releases">Releases</a>
 </p>
 
 <p align="center">
-  <a href="https://github.com/mprudhvi145-bit/ai-compliance-gateway/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-Apache%202.0-blue.svg" alt="License"></a>
-  <a href="https://github.com/mprudhvi145-bit/ai-compliance-gateway/actions"><img src="https://github.com/mprudhvi145-bit/ai-compliance-gateway/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
-  <a href="https://github.com/mprudhvi145-bit/ai-compliance-gateway/releases"><img src="https://img.shields.io/github/v/release/mprudhvi145-bit/ai-compliance-gateway.svg" alt="Release"></a>
-  <a href="https://github.com/mprudhvi145-bit/ai-compliance-gateway/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-Apache%202.0-blue.svg" alt="License"></a>
+  <a href="https://github.com/vimarshakk/ai-compliance-gateway/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-Apache%202.0-blue.svg" alt="License"></a>
+  <a href="https://github.com/vimarshakk/ai-compliance-gateway/actions"><img src="https://github.com/vimarshakk/ai-compliance-gateway/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
+  <a href="https://github.com/vimarshakk/ai-compliance-gateway/releases"><img src="https://img.shields.io/github/v/release/vimarshakk/ai-compliance-gateway.svg" alt="Release"></a>
   <img src="https://img.shields.io/badge/coverage-95%25-brightgreen" alt="Coverage">
 </p>
 
@@ -140,7 +139,7 @@ acg bom .
 ### With Docker Compose
 
 ```bash
-git clone https://github.com/mprudhvi145-bit/ai-compliance-gateway.git
+git clone https://github.com/vimarshakk/ai-compliance-gateway.git
 cd ai-compliance-gateway
 
 # Start all services (gateway + admin + database)
@@ -178,7 +177,7 @@ const response = await client.chatCompletion({
 |----------|---------|---------|
 | TypeScript | `@acg/sdk` | `npm install @acg/sdk` |
 | Python | `acg` | `pip install acg` |
-| Go | `github.com/mprudhvi145-bit/ai-compliance-gateway-go` | `go get github.com/mprudhvi145-bit/ai-compliance-gateway-go` |
+| Go | `github.com/vimarshakk/ai-compliance-gateway-go` | `go get github.com/vimarshakk/ai-compliance-gateway-go` |
 
 ## Architecture
 
@@ -329,8 +328,8 @@ helm install acg ./infra/helm/acg \
 
 ## Community
 
-- 📖 [Documentation](https://docs.acg.dev)
-- 💬 [GitHub Discussions](https://github.com/mprudhvi145-bit/ai-compliance-gateway/discussions)
+- 📖 [Documentation](https://github.com/vimarshakk/ai-compliance-gateway/tree/main/docs)
+- 💬 [GitHub Discussions](https://github.com/vimarshakk/ai-compliance-gateway/discussions)
 - 🏗️ [Roadmap](ROADMAP.md)
 - 🤝 [Contributing](CONTRIBUTING.md)
 - 📋 [Governance](GOVERNANCE.md)
@@ -343,7 +342,7 @@ ACG takes security seriously. If you discover a vulnerability, please follow our
 All releases are signed. Verify with:
 
 ```bash
-cosign verify ghcr.io/mprudhvi145-bit/ai-compliance-gateway:latest
+cosign verify ghcr.io/vimarshakk/ai-compliance-gateway:latest
 ```
 
 ## License

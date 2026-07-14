@@ -5,7 +5,7 @@ Go client for the AI Compliance Gateway API.
 ## Installation
 
 ```bash
-go get github.com/mprudhvi145-bit/ai-compliance-gateway/packages/sdk-go
+go get github.com/vimarshakk/ai-compliance-gateway/packages/sdk-go
 ```
 
 ## Quick Start
@@ -18,7 +18,7 @@ import (
     "fmt"
     "log"
 
-    acg "github.com/mprudhvi145-bit/ai-compliance-gateway/packages/sdk-go"
+    acg "github.com/vimarshakk/ai-compliance-gateway/packages/sdk-go"
 )
 
 func main() {

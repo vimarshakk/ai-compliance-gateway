@@ -8,19 +8,19 @@ Welcome to the ACG community! We're building the industry standard for AI Govern
 
 The primary place for questions, ideas, and conversations:
 
-- **[General](https://github.com/mprudhvi145-bit/ai-compliance-gateway/discussions)** — announcements and general discussion
-- **[Q&A](https://github.com/mprudhvi145-bit/ai-compliance-gateway/discussions/categories/q-a)** — ask questions and get help
-- **[Ideas](https://github.com/mprudhvi145-bit/ai-compliance-gateway/discussions/categories/ideas)** — feature requests and proposals
-- **[Show and Tell](https://github.com/mprudhvi145-bit/ai-compliance-gateway/discussions/categories/show-and-tell)** — share what you've built
-- **[RFC](https://github.com/mprudhvi145-bit/ai-compliance-gateway/discussions/categories/rfc)** — architecture and design proposals
+- **[General](https://github.com/vimarshakk/ai-compliance-gateway/discussions)** — announcements and general discussion
+- **[Q&A](https://github.com/vimarshakk/ai-compliance-gateway/discussions/categories/q-a)** — ask questions and get help
+- **[Ideas](https://github.com/vimarshakk/ai-compliance-gateway/discussions/categories/ideas)** — feature requests and proposals
+- **[Show and Tell](https://github.com/vimarshakk/ai-compliance-gateway/discussions/categories/show-and-tell)** — share what you've built
+- **[RFC](https://github.com/vimarshakk/ai-compliance-gateway/discussions/categories/rfc)** — architecture and design proposals
 
 ### 🐛 GitHub Issues
 
 For bug reports and feature requests:
 
-- **[Bug Reports](https://github.com/mprudhvi145-bit/ai-compliance-gateway/issues/new?template=bug_report.yml)** — report bugs
-- **[Feature Requests](https://github.com/mprudhvi145-bit/ai-compliance-gateway/issues/new?template=feature_request.yml)** — suggest features
-- **[Security Reports](https://github.com/mprudhvi145-bit/ai-compliance-gateway/issues/new?template=security_report.yml)** — report vulnerabilities (privately)
+- **[Bug Reports](https://github.com/vimarshakk/ai-compliance-gateway/issues/new?template=bug_report.yml)** — report bugs
+- **[Feature Requests](https://github.com/vimarshakk/ai-compliance-gateway/issues/new?template=feature_request.yml)** — suggest features
+- **[Security Reports](https://github.com/vimarshakk/ai-compliance-gateway/issues/new?template=security_report.yml)** — report vulnerabilities (privately)
 
 ### 🤝 Contributing
 
@@ -65,8 +65,8 @@ Help improve our docs:
 
 | Channel | Purpose | Link |
 |---------|---------|------|
-| GitHub Discussions | Questions, ideas, RFC | [Link](https://github.com/mprudhvi145-bit/ai-compliance-gateway/discussions) |
-| GitHub Issues | Bugs, features | [Link](https://github.com/mprudhvi145-bit/ai-compliance-gateway/issues) |
+| GitHub Discussions | Questions, ideas, RFC | [Link](https://github.com/vimarshakk/ai-compliance-gateway/discussions) |
+| GitHub Issues | Bugs, features | [Link](https://github.com/vimarshakk/ai-compliance-gateway/issues) |
 | Email | Security, enterprise | hello@acg.dev |
 
 ## RFC Process
@@ -121,9 +121,9 @@ All participants must follow our [Code of Conduct](CODE_OF_CONDUCT.md).
 If you're stuck:
 
 1. Check the [FAQ](FAQ.md)
-2. Search [existing discussions](https://github.com/mprudhvi145-bit/ai-compliance-gateway/discussions)
-3. Search [existing issues](https://github.com/mprudhvi145-bit/ai-compliance-gateway/issues)
-4. Ask in [GitHub Discussions](https://github.com/mprudhvi145-bit/ai-compliance-gateway/discussions)
+2. Search [existing discussions](https://github.com/vimarshakk/ai-compliance-gateway/discussions)
+3. Search [existing issues](https://github.com/vimarshakk/ai-compliance-gateway/issues)
+4. Ask in [GitHub Discussions](https://github.com/vimarshakk/ai-compliance-gateway/discussions)
 
 ## Governance
 

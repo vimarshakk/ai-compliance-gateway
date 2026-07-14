@@ -3,7 +3,7 @@
 # Declare variables to be passed into your templates.
 
 global:
-  imageRegistry: ghcr.io/mprudhvi145-bit
+  imageRegistry: ghcr.io/vimarshakk
   imagePullSecrets: []
 
 # Gateway configuration
