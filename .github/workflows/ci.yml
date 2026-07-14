@@ -65,7 +65,7 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
-      - run: pnpm vitest run --coverage
+      - run: pnpm test
         env:
           DATABASE_URL: postgresql://acg:test@localhost:5432/acg_test
           REDIS_URL: redis://localhost:6379
