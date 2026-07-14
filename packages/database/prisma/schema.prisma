@@ -1,0 +1,152 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Organization {
+  id              String   @id @default(cuid())
+  name            String
+  slug            String   @unique
+  compliancePacks String[] @default([])
+  settings        Json     @default("{}")
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  projects  Project[]
+  apiKeys   ApiKey[]
+  policies  Policy[]
+  auditLogs AuditLog[]
+  users     User[]
+}
+
+model Project {
+  id             String   @id @default(cuid())
+  name           String
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  settings       Json     @default("{}")
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  apiKeys   ApiKey[]
+  auditLogs AuditLog[]
+
+  @@index([organizationId])
+}
+
+model Policy {
+  id             String   @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  name           String
+  description    String   @default("")
+  type           String
+  rules          Json     @default("[]")
+  enabled        Boolean  @default(true)
+  priority       Int      @default(0)
+  version        Int      @default(1)
+  createdBy      String   @default("system")
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([organizationId])
+  @@index([type])
+  @@index([enabled])
+}
+
+model ApiKey {
+  id             String   @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  projectId      String?
+  project        Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  name           String
+  keyHash        String
+  keyPrefix      String
+  scopes         String[] @default(["read"])
+  enabled        Boolean  @default(true)
+  expiresAt      DateTime?
+  lastUsedAt     DateTime?
+  createdBy      String   @default("system")
+  createdAt      DateTime @default(now())
+
+  @@index([organizationId])
+  @@index([keyHash])
+  @@index([keyPrefix])
+}
+
+model AuditLog {
+  id             String   @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  projectId      String?
+  project        Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  userId         String?
+  action         String
+  resource       String
+  resourceId     String?
+  details        Json     @default("{}")
+  riskScore      Int?
+  createdAt      DateTime @default(now())
+
+  @@index([organizationId])
+  @@index([projectId])
+  @@index([action])
+  @@index([resource])
+  @@index([createdAt])
+}
+
+model User {
+  id             String   @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  externalId     String
+  email          String?
+  name           String?
+  role           String   @default("viewer")
+  lastLoginAt    DateTime?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@unique([organizationId, externalId])
+  @@index([organizationId])
+  @@index([externalId])
+}
+
+model Subscription {
+  id             String   @id @default(cuid())
+  organizationId String   @unique
+  tier           String   @default("free")
+  status         String   @default("active")
+  requestsLimit  Int      @default(1000)
+  requestsUsed   Int      @default(0)
+  currentPeriodStart DateTime @default(now())
+  currentPeriodEnd   DateTime?
+  stripeCustomerId   String?
+  razorpayId         String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model UsageRecord {
+  id             String   @id @default(cuid())
+  organizationId String
+  projectId      String?
+  model          String
+  inputTokens    Int      @default(0)
+  outputTokens   Int      @default(0)
+  cost           Float    @default(0)
+  latencyMs      Int      @default(0)
+  blocked        Boolean  @default(false)
+  piiDetected    Boolean  @default(false)
+  policyViolation Boolean @default(false)
+  createdAt      DateTime @default(now())
+
+  @@index([organizationId])
+  @@index([createdAt])
+  @@index([model])
+}

@@ -1,0 +1,422 @@
+x-common-env: &common-env
+  LOG_LEVEL: ${LOG_LEVEL:-info}
+  NODE_ENV: ${NODE_ENV:-development}
+
+x-postgres-env: &postgres-env
+  POSTGRES_DB: acg
+  POSTGRES_USER: acg
+  POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-acg_dev_password}
+
+services:
+  # ============================================
+  # Core Services (profile: core)
+  # ============================================
+  postgres:
+    image: postgres:16-alpine
+    profiles: ["core", "development"]
+    environment: *postgres-env
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U acg"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    profiles: ["core", "development"]
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  nats:
+    image: nats:2.10-alpine
+    profiles: ["core", "development"]
+    command: ["--jetstream", "--store_dir", "/data"]
+    ports:
+      - "4222:4222"
+      - "8222:8222"
+    volumes:
+      - nats_data:/data
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:8222/healthz"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  minio:
+    image: minio/minio:latest
+    profiles: ["core", "development"]
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: ${MINIO_PASSWORD:-minio_dev_password}
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio_data:/data
+
+  qdrant:
+    image: qdrant/qdrant:latest
+    profiles: ["core", "development"]
+    ports:
+      - "6333:6333"
+      - "6334:6334"
+    volumes:
+      - qdrant_data:/qdrant/storage
+    environment:
+      QDRANT__SERVICE__GRPC_PORT: 6334
+
+  litellm:
+    image: ghcr.io/berriai/litellm:main-latest
+    profiles: ["core", "development"]
+    ports:
+      - "4000:4000"
+    volumes:
+      - ./configs/litellm/base.yaml:/app/config.yaml
+    command: ["--config", "/app/config.yaml", "--port", "4000"]
+    environment:
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  kong:
+    image: kong:3.9-alpine
+    profiles: ["core", "development"]
+    environment:
+      KONG_DATABASE: "off"
+      KONG_DECLARATIVE_CONFIG: /etc/kong/kong.yml
+      KONG_PROXY_LISTEN: "0.0.0.0:8000, 0.0.0.0:8443 ssl"
+      KONG_ADMIN_LISTEN: "0.0.0.0:8001"
+      KONG_LOG_LEVEL: info
+    ports:
+      - "8000:8000"
+      - "8001:8001"
+      - "8443:8443"
+    volumes:
+      - ./configs/kong/base/kong.yml:/etc/kong/kong.yml
+
+  opa:
+    image: openpolicyagent/opa:latest
+    profiles: ["core", "development"]
+    ports:
+      - "8181:8181"
+    command: ["run", "--server", "--addr", "0.0.0.0:8181", "/policies"]
+    volumes:
+      - ./configs/opa:/policies
+
+  presidio-analyzer:
+    image: mcr.microsoft.com/presidio-analyzer:latest
+    profiles: ["core", "development"]
+    ports:
+      - "3001:3000"
+    environment:
+      ANALYZER_CONF_FILE: /conf/analyzer.yaml
+
+  presidio-anonymizer:
+    image: mcr.microsoft.com/presidio-anonymizer:latest
+    profiles: ["core", "development"]
+    ports:
+      - "3002:3000"
+
+  nemo-guardrails:
+    image: nemoguardrails/nemoguardrails:latest
+    profiles: ["core", "development"]
+    ports:
+      - "8000:8000"
+    environment:
+      GUARDRAILS_MODULE_NAME: guardrails
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:24.0
+    profiles: ["core", "development"]
+    command: start-dev
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:-admin}
+    ports:
+      - "8080:8080"
+
+  vault:
+    image: hashicorp/vault:1.16
+    profiles: ["core", "development"]
+    cap_add: ["IPC_LOCK"]
+    environment:
+      VAULT_DEV_ROOT_TOKEN_ID: ${VAULT_ROOT_TOKEN:-dev-only-token}
+      VAULT_DEV_LISTEN_ADDRESS: "0.0.0.0:8200"
+    ports:
+      - "8200:8200"
+
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:latest
+    profiles: ["observability", "development"]
+    ports:
+      - "4317:4317"
+      - "4318:4318"
+      - "8888:8888"
+    volumes:
+      - ./configs/otel:/etc/otelcol-contrib
+
+  # ============================================
+  # Enterprise Services (profile: enterprise)
+  # ============================================
+  istiod:
+    image: istio/pilot:1.24
+    profiles: ["enterprise"]
+    ports:
+      - "15012:15012"
+
+  cilium:
+    image: quay.io/cilium/cilium:v1.16
+    profiles: ["enterprise"]
+
+  cert-manager:
+    image: quay.io/jetstack/cert-manager-controller:v1.16
+    profiles: ["enterprise"]
+
+  trivy:
+    image: aquasec/trivy:latest
+    profiles: ["enterprise"]
+    command: ["server", "--listen", "0.0.0.0:8080"]
+
+  falco:
+    image: falcosecurity/falco:latest
+    profiles: ["enterprise"]
+    privileged: true
+
+  cosign:
+    image: gcr.io/projectsigstore/cosign:v2.4
+    profiles: ["enterprise"]
+
+  kyverno:
+    image: ghcr.io/kyverno/kyverno:v1.13
+    profiles: ["enterprise"]
+
+  spicedb:
+    image: authzed/spicedb:latest
+    profiles: ["enterprise"]
+    ports:
+      - "50051:50051"
+
+  clickhouse:
+    image: clickhouse/clickhouse-server:latest
+    profiles: ["enterprise", "observability"]
+    ports:
+      - "8123:8123"
+      - "9000:9000"
+    volumes:
+      - clickhouse_data:/var/lib/clickhouse
+
+  mlflow:
+    image: ghcr.io/mlflow/mlflow:v2.19
+    profiles: ["enterprise"]
+    ports:
+      - "5000:5000"
+    command: ["mlflow", "server", "--host", "0.0.0.0"]
+
+  # ============================================
+  # Observability Services (profile: observability)
+  # ============================================
+  prometheus:
+    image: prom/prometheus:latest
+    profiles: ["observability", "development"]
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./configs/prometheus/base/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+      - "--web.enable-lifecycle"
+
+  grafana:
+    image: grafana/grafana:latest
+    profiles: ["observability", "development"]
+    ports:
+      - "3005:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD:-admin}
+    volumes:
+      - ./configs/grafana/base/dashboards:/var/lib/grafana/dashboards
+      - ./configs/grafana/base/datasources.yml:/etc/grafana/provisioning/datasources/datasources.yml
+      - grafana_data:/var/lib/grafana
+
+  # ============================================
+  # AI-Native Services (profile: ai-native)
+  # ============================================
+  openlit:
+    image: ghcr.io/openlit/openlit:latest
+    profiles: ["ai-native"]
+    ports:
+      - "3009:3000"
+
+  langfuse:
+    image: langfuse/langfuse:latest
+    profiles: ["ai-native"]
+    ports:
+      - "3007:3000"
+    environment:
+      DATABASE_URL: postgresql://acg:${POSTGRES_PASSWORD}@postgres:5432/acg
+      NEXTAUTH_SECRET: ${NEXTAUTH_SECRET:-dev-secret}
+      NEXTAUTH_URL: http://localhost:3007
+
+  open-webui:
+    image: ghcr.io/open-webui/open-webui:main
+    profiles: ["ai-native"]
+    ports:
+      - "3008:8080"
+    environment:
+      OLLAMA_BASE_URL: http://ollama:11434
+
+  kserve:
+    image: kserve/kserve:latest
+    profiles: ["ai-native"]
+
+  ray:
+    image: rayproject/ray:latest
+    profiles: ["ai-native"]
+    ports:
+      - "8265:8265"
+
+  # ============================================
+  # Local LLM (profile: local-llm)
+  # ============================================
+  ollama:
+    image: ollama/ollama:latest
+    profiles: ["local-llm", "development"]
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+
+  vllm:
+    image: vllm/vllm-openai:latest
+    profiles: ["local-llm"]
+    ports:
+      - "8000:8000"
+    environment:
+      MODEL: meta-llama/Llama-3.3-70B-Instruct
+    command: ["--model", "meta-llama/Llama-3.3-70B-Instruct", "--port", "8000"]
+
+  # ============================================
+  # Application Services
+  # ============================================
+  gateway:
+    build:
+      context: .
+      dockerfile: deployments/docker/Dockerfile.gateway
+    profiles: ["core", "development"]
+    ports:
+      - "3000:3000"
+    environment:
+      <<: *common-env
+      LITELLM_URL: http://litellm:4000
+      PRESIDIO_ANALYZER_URL: http://presidio-analyzer:3000
+      PRESIDIO_ANONYMIZER_URL: http://presidio-anonymizer:3000
+      OPA_URL: http://opa:8181
+      GUARDRAILS_URL: http://nemo-guardrails:8000
+      NATS_URL: http://nats:4222
+      REDIS_URL: http://redis:6379
+      OTEL_COLLECTOR_URL: http://otel-collector:4318
+    depends_on:
+      postgres: { condition: service_healthy }
+      redis: { condition: service_healthy }
+      litellm: { condition: service_healthy }
+      opa: { condition: service_started }
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  admin:
+    build:
+      context: .
+      dockerfile: deployments/docker/Dockerfile.admin
+    profiles: ["core", "development"]
+    ports:
+      - "3002:3002"
+    environment:
+      <<: *common-env
+      POSTGRES_URL: postgresql://acg:${POSTGRES_PASSWORD}@postgres:5432/acg
+      REDIS_URL: http://redis:6379
+      KEYCLOAK_URL: http://keycloak:8080
+      VAULT_URL: http://vault:8200
+    depends_on:
+      postgres: { condition: service_healthy }
+      redis: { condition: service_healthy }
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3002/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  evaluator:
+    build:
+      context: .
+      dockerfile: deployments/docker/Dockerfile.evaluator
+    profiles: ["core", "enterprise"]
+    ports:
+      - "3003:3003"
+    environment:
+      <<: *common-env
+      LITELLM_URL: http://litellm:4000
+      MLFLOW_URL: http://mlflow:5000
+      LANGFUSE_URL: http://langfuse:3000
+    depends_on:
+      litellm: { condition: service_healthy }
+
+  dashboard:
+    build:
+      context: .
+      dockerfile: deployments/docker/Dockerfile.dashboard
+    profiles: ["core", "development"]
+    ports:
+      - "3004:3004"
+    environment:
+      <<: *common-env
+      NEXT_PUBLIC_API_URL: http://admin:3002
+      NEXT_PUBLIC_GATEWAY_URL: http://gateway:3000
+    depends_on:
+      admin: { condition: service_healthy }
+
+  playground:
+    build:
+      context: .
+      dockerfile: deployments/docker/Dockerfile.playground
+    profiles: ["core", "development"]
+    ports:
+      - "3006:3006"
+    environment:
+      <<: *common-env
+      NEXT_PUBLIC_GATEWAY_URL: http://gateway:3000
+      NEXT_PUBLIC_ADMIN_URL: http://admin:3002
+    depends_on:
+      gateway: { condition: service_healthy }
+
+volumes:
+  postgres_data:
+  redis_data:
+  nats_data:
+  minio_data:
+  qdrant_data:
+  prometheus_data:
+  grafana_data:
+  clickhouse_data:
+  ollama_data:

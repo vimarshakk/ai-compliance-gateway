@@ -1,0 +1,31 @@
+FROM node:22-alpine AS base
+WORKDIR /app
+
+FROM base AS deps
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY apps/admin/package.json ./apps/admin/
+COPY packages/shared/package.json ./packages/shared/
+COPY packages/contracts/package.json ./packages/contracts/
+RUN corepack enable && pnpm install --frozen-lockfile
+
+FROM base AS builder
+COPY --from=deps /app/node_modules ./node_modules
+COPY --from=deps /app/apps/admin/node_modules ./apps/admin/node_modules
+COPY --from=deps /app/packages/shared/node_modules ./packages/shared/node_modules
+COPY --from=deps /app/packages/contracts/node_modules ./packages/contracts/node_modules
+COPY tsconfig.base.json ./
+COPY packages/shared/tsconfig.json ./packages/shared/
+COPY packages/shared/src ./packages/shared/src
+COPY packages/contracts/tsconfig.json ./packages/contracts/
+COPY packages/contracts/src ./packages/contracts/src
+COPY apps/admin/tsconfig.json ./apps/admin/
+COPY apps/admin/src ./apps/admin/src
+RUN pnpm --filter @acg/shared build && pnpm --filter @acg/contracts build && pnpm --filter @acg/admin build
+
+FROM base AS runner
+ENV NODE_ENV=production
+COPY --from=builder /app/apps/admin/dist ./dist
+COPY --from=builder /app/apps/admin/node_modules ./node_modules
+COPY --from=builder /app/node_modules ./node_modules
+EXPOSE 3002
+CMD ["node", "dist/server.js"]
