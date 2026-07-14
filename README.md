@@ -354,5 +354,6 @@ The core engine is fully open source. Enterprise features (SSO/SAML, advanced go
 ---
 
 <p align="center">
-  Built with care for the teams building AI that the world can trust.
+  Built with care for the teams building AI that the world can trust.<br>
+  <a href="https://www.linkedin.com/in/prudhvi-vimarshak-3aaa23166/" target="_blank" rel="noopener noreferrer">By Vimarshak</a>
 </p>
