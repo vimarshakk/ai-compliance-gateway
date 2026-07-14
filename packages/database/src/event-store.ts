@@ -52,6 +52,6 @@ export async function getEventStats(organizationId: string) {
     totalEvents,
     recentEvents,
     highRiskEvents,
-    topActions: topActions.map((a) => ({ action: a.action, count: a._count })),
+    topActions: topActions.map((a: { action: string; _count: number }) => ({ action: a.action, count: a._count })),
   };
 }
