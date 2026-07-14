@@ -12,6 +12,6 @@
     "openapi": "node scripts/generate-openapi.mjs",
     "clean": "rm -rf dist"
   },
-  "dependencies": { "@acg/shared": "workspace:*", "zod": "^3.24.0" },
+  "dependencies": { "@acg/shared": "workspace:*", "zod": "^4.4.3" },
   "devDependencies": { "typescript": "^5.7.0" }
 }
