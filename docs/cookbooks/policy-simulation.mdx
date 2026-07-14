@@ -1,0 +1,98 @@
+---
+title: "Cookbook: Policy Simulation"
+description: "Test compliance policies against sample requests before deploying"
+---
+
+## Overview
+
+Policy simulation lets you test OPA rules against synthetic inputs without affecting production traffic. Catch rule errors and unintended consequences before they block real users.
+
+## Simulate via CLI
+
+```bash
+# Simulate a request against all active policies
+acg simulate \
+  --model gpt-4 \
+  --message "What is 123-45-6789?" \
+  --pack hipaa
+
+# Simulate with custom input
+acg simulate --input requests/sample-pii.json
+```
+
+## Simulate via API
+
+```bash
+curl -X POST http://localhost:3002/v1/tools/simulate \
+  -H "Content-Type: application/json" \
+  -d '{
+    "organizationId": "my-org",
+    "request": {
+      "model": "gpt-4",
+      "messages": [
+        {"role": "user", "content": "What is 123-45-6789?"}
+      ]
+    },
+    "packs": ["hipaa", "dpdp"]
+  }'
+```
+
+## Response
+
+```json
+{
+  "simulation": {
+    "packs": ["hipaa", "dpdp"],
+    "decisions": [
+      {
+        "pack": "hipaa",
+        "rule": "block_ssn",
+        "decision": "deny",
+        "reason": "SSN pattern detected in request",
+        "severity": "high"
+      }
+    ],
+    "wouldBlock": true,
+    "riskLevel": "high"
+  }
+}
+```
+
+## Batch Simulation
+
+```typescript
+// Test multiple scenarios
+const scenarios = [
+  { message: "Hello world", expected: "allow" },
+  { message: "My SSN is 123-45-6789", expected: "deny" },
+  { message: "Call me at 555-1234", expected: "deny" },
+  { message: "I need medical advice", expected: "warn" },
+];
+
+for (const scenario of scenarios) {
+  const result = await acg.simulate({
+    message: scenario.message,
+    packs: ['hipaa'],
+  });
+
+  const status = result.wouldBlock === (scenario.expected === 'deny')
+    ? '✅'
+    : '❌';
+
+  console.log(`${status} "${scenario.message}" → ${result.simulation.decisions[0]?.decision ?? 'allow'}`);
+}
+```
+
+## Pre-Deploy Checklist
+
+1. Run simulation against all existing policies
+2. Check for false positives (legitimate requests blocked)
+3. Check for false negatives (malicious requests allowed)
+4. Review severity ratings
+5. Test edge cases (empty input, very long input, unicode)
+
+## Next Steps
+
+- [Custom Policies](/cookbooks/custom-policy) — Write your own rules
+- [Compliance Packs](/compliance/overview) — Pre-built pack reference
+- [CI/CD Integration](/cookbooks/ci-cd-integration) — Automate in pipelines

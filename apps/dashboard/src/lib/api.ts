@@ -125,6 +125,69 @@ export const analytics = {
   complianceReport: (pack: string) => request<unknown>('GET', `/v2/compliance-pack/${pack}/report`),
 };
 
+// Compliance Scores
+export interface ComplianceScore {
+  id: string;
+  organizationId: string;
+  projectId?: string;
+  overallScore: number;
+  maxScore: number;
+  percentage: number;
+  breakdown: Record<string, unknown>;
+  pack?: string;
+  scanResult: Record<string, unknown>;
+  bomResult: Record<string, unknown>;
+  createdAt: string;
+}
+export const complianceScores = {
+  list: (params?: { organizationId?: string; projectId?: string; limit?: number; offset?: number }) => {
+    const qs = new URLSearchParams();
+    if (params?.organizationId) qs.set('organizationId', params.organizationId);
+    if (params?.projectId) qs.set('projectId', params.projectId);
+    if (params?.limit) qs.set('limit', String(params.limit));
+    if (params?.offset) qs.set('offset', String(params.offset));
+    return request<{ scores: ComplianceScore[]; total: number }>('GET', `/v1/compliance/scores${qs.toString() ? `?${qs}` : ''}`);
+  },
+  get: (id: string) => request<ComplianceScore>('GET', `/v1/compliance/scores/${id}`),
+  create: (data: { organizationId: string; projectId?: string; overallScore: number; maxScore: number; percentage: number; breakdown?: Record<string, unknown>; pack?: string; scanResult?: Record<string, unknown>; bomResult?: Record<string, unknown> }) =>
+    request<ComplianceScore>('POST', '/v1/compliance/scores', data),
+  history: (params?: { organizationId?: string; projectId?: string; days?: number }) => {
+    const qs = new URLSearchParams();
+    if (params?.organizationId) qs.set('organizationId', params.organizationId);
+    if (params?.projectId) qs.set('projectId', params.projectId);
+    if (params?.days) qs.set('days', String(params.days));
+    return request<{ history: Array<{ id: string; overallScore: number; percentage: number; pack?: string; createdAt: string }>; organizationId?: string; projectId?: string; days: number }>('GET', `/v1/compliance/scores/history${qs.toString() ? `?${qs}` : ''}`);
+  },
+};
+
+// AI Providers
+export interface AiProvider {
+  id: string;
+  slug: string;
+  name: string;
+  company: string;
+  baseUrl: string;
+  apiStyle: string;
+  complianceFeatures: Record<string, boolean>;
+  supportedRegions: string[];
+  maxTokens: number;
+  models: string[];
+  certified: boolean;
+  certifiedAt?: string;
+  createdAt: string;
+}
+export const providers = {
+  list: (params?: { certified?: boolean; compliance?: string; limit?: number; offset?: number }) => {
+    const qs = new URLSearchParams();
+    if (params?.certified !== undefined) qs.set('certified', String(params.certified));
+    if (params?.compliance) qs.set('compliance', params.compliance);
+    if (params?.limit) qs.set('limit', String(params.limit));
+    if (params?.offset) qs.set('offset', String(params.offset));
+    return request<{ providers: AiProvider[]; total: number }>('GET', `/v1/providers${qs.toString() ? `?${qs}` : ''}`);
+  },
+  get: (id: string) => request<AiProvider>('GET', `/v1/providers/${id}`),
+};
+
 // Engine APIs
 export const engines = {
   router: {

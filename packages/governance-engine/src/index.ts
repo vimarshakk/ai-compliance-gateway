@@ -277,7 +277,15 @@ export class GovernanceEngine {
       case 'gt': return typeof actual === 'number' && typeof expected === 'number' && actual > expected;
       case 'lt': return typeof actual === 'number' && typeof expected === 'number' && actual < expected;
       case 'contains': return typeof actual === 'string' && typeof expected === 'string' && actual.includes(expected);
-      case 'matches': return typeof actual === 'string' && typeof expected === 'string' && new RegExp(expected).test(actual);
+      case 'matches': {
+        if (typeof actual !== 'string' || typeof expected !== 'string') return false;
+        try {
+          const safePattern = expected.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+          return new RegExp(safePattern).test(actual);
+        } catch {
+          return false;
+        }
+      }
       default: return false;
     }
   }
@@ -344,13 +352,12 @@ export class GovernanceEngine {
     this.addPolicy({
       id: 'gov-004',
       name: 'After-Hours Restriction',
-      description: 'Non-emergency AI usage restricted outside business hours',
+      description: 'Non-emergency AI usage restricted outside business hours (before 8 AM or after 8 PM)',
       version: 1,
       enabled: false,
       priority: 50,
       conditions: [
-        { type: 'time', operator: 'lt', value: 8 },
-        { type: 'time', operator: 'gt', value: 20 },
+        { type: 'time', operator: 'matches', value: '^([0-7]|2[0-3])$' },
       ],
       actions: [
         { type: 'log', config: { level: 'info' } },

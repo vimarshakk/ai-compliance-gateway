@@ -1,0 +1,201 @@
+# Default values for ACG
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+global:
+  imageRegistry: ghcr.io/mprudhvi145-bit
+  imagePullSecrets: []
+
+# Gateway configuration
+gateway:
+  enabled: true
+  replicaCount: 1
+  image:
+    repository: acg-gateway
+    tag: "latest"
+    pullPolicy: IfNotPresent
+  service:
+    type: ClusterIP
+    port: 3000
+  ingress:
+    enabled: false
+    className: nginx
+    annotations: {}
+    hosts:
+      - host: gateway.acg.local
+        paths:
+          - path: /
+            pathType: Prefix
+    tls: []
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 250m
+      memory: 256Mi
+  autoscaling:
+    enabled: false
+    minReplicas: 1
+    maxReplicas: 10
+    targetCPUUtilizationPercentage: 80
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+
+# Admin API configuration
+admin:
+  enabled: true
+  replicaCount: 1
+  image:
+    repository: acg-admin
+    tag: "latest"
+    pullPolicy: IfNotPresent
+  service:
+    type: ClusterIP
+    port: 3002
+  ingress:
+    enabled: false
+    className: nginx
+    annotations: {}
+    hosts:
+      - host: admin.acg.local
+        paths:
+          - path: /
+            pathType: Prefix
+    tls: []
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 250m
+      memory: 256Mi
+
+# Dashboard configuration
+dashboard:
+  enabled: true
+  replicaCount: 1
+  image:
+    repository: acg-dashboard
+    tag: "latest"
+    pullPolicy: IfNotPresent
+  service:
+    type: ClusterIP
+    port: 3000
+  ingress:
+    enabled: false
+    className: nginx
+    annotations: {}
+    hosts:
+      - host: dashboard.acg.local
+        paths:
+          - path: /
+            pathType: Prefix
+    tls: []
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 250m
+      memory: 256Mi
+
+# PostgreSQL configuration
+postgresql:
+  enabled: true
+  auth:
+    postgresPassword: ""
+    username: acg
+    password: ""
+    database: acg
+  primary:
+    persistence:
+      enabled: true
+      size: 10Gi
+    resources:
+      limits:
+        cpu: 500m
+        memory: 512Mi
+      requests:
+        cpu: 250m
+        memory: 256Mi
+
+# Redis configuration
+redis:
+  enabled: true
+  architecture: standalone
+  auth:
+    enabled: false
+  master:
+    persistence:
+      enabled: true
+      size: 2Gi
+    resources:
+      limits:
+        cpu: 250m
+        memory: 256Mi
+      requests:
+        cpu: 125m
+        memory: 128Mi
+
+# NATS configuration
+nats:
+  enabled: true
+  resources:
+    limits:
+      cpu: 250m
+      memory: 256Mi
+    requests:
+      cpu: 125m
+      memory: 128Mi
+
+# OPA configuration
+opa:
+  enabled: true
+  image:
+    repository: openpolicyagent/opa
+    tag: "latest-static"
+    pullPolicy: IfNotPresent
+  service:
+    type: ClusterIP
+    port: 8181
+  resources:
+    limits:
+      cpu: 250m
+      memory: 256Mi
+    requests:
+      cpu: 125m
+      memory: 128Mi
+
+# Keycloak configuration
+keycloak:
+  enabled: true
+  image:
+    repository: quay.io/keycloak/keycloak
+    tag: "24.0"
+    pullPolicy: IfNotPresent
+  service:
+    type: ClusterIP
+    port: 8080
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 250m
+      memory: 256Mi
+
+# Secrets
+secrets:
+  jwtSecret: ""
+  apiKey: ""
+
+# Monitoring
+monitoring:
+  enabled: false
+  serviceMonitor:
+    enabled: false
+    interval: 30s
+  grafana:
+    enabled: false

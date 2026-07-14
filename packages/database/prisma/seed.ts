@@ -104,7 +104,7 @@ async function seed() {
       scopes: ['read', 'write', 'admin'],
     },
   });
-  console.log(`  API Key: ${apiKey.keyPrefix}... (raw: ${rawKey})`);
+  console.log(`  API Key prefix: ${apiKey.keyPrefix}... (key saved in DB as hash)`);
 
   await prisma.subscription.create({
     data: {
@@ -167,11 +167,35 @@ async function seed() {
   }
   console.log(`  Audit Logs: ${auditEntries.length} created`);
 
+  const aiProviders = [
+    { slug: 'openai', name: 'OpenAI', company: 'OpenAI, Inc.', baseUrl: 'https://api.openai.com/v1', apiStyle: 'openai', complianceFeatures: { gdpr: true, soc2: true, hipaa: false, pci: false, dpdp: false, abdm: false }, supportedRegions: ['us', 'eu'], maxTokens: 128000, models: ['gpt-4o', 'gpt-4', 'gpt-3.5-turbo', 'o1', 'o3'], certified: true },
+    { slug: 'anthropic', name: 'Claude', company: 'Anthropic, PBC', baseUrl: 'https://api.anthropic.com/v1', apiStyle: 'anthropic', complianceFeatures: { gdpr: true, soc2: true, hipaa: false, pci: false, dpdp: false, abdm: false }, supportedRegions: ['us', 'eu'], maxTokens: 200000, models: ['claude-opus-4', 'claude-sonnet-4', 'claude-3-haiku'], certified: true },
+    { slug: 'google', name: 'Gemini', company: 'Google LLC', baseUrl: 'https://generativelanguage.googleapis.com/v1', apiStyle: 'google', complianceFeatures: { gdpr: true, soc2: true, hipaa: false, pci: false, dpdp: false, abdm: false }, supportedRegions: ['us', 'eu', 'global'], maxTokens: 1000000, models: ['gemini-2.5-pro', 'gemini-2.5-flash'], certified: true },
+    { slug: 'azure-openai', name: 'Azure OpenAI', company: 'Microsoft Corporation', baseUrl: 'https://your-resource.openai.azure.com', apiStyle: 'openai', complianceFeatures: { gdpr: true, soc2: true, hipaa: true, pci: true, dpdp: true, abdm: false }, supportedRegions: ['us', 'eu', 'india', 'gov'], maxTokens: 128000, models: ['gpt-4o', 'gpt-4', 'gpt-35-turbo'], certified: true },
+    { slug: 'vertex-ai', name: 'Vertex AI', company: 'Google LLC', baseUrl: 'https://us-central1-aiplatform.googleapis.com', apiStyle: 'google', complianceFeatures: { gdpr: true, soc2: true, hipaa: true, pci: false, dpdp: true, abdm: false }, supportedRegions: ['us', 'eu', 'india'], maxTokens: 1000000, models: ['gemini-2.5-pro', 'gemini-2.5-flash', 'chirp'], certified: true },
+    { slug: 'bedrock', name: 'Amazon Bedrock', company: 'AWS', baseUrl: 'https://bedrock-runtime.us-east-1.amazonaws.com', apiStyle: 'custom', complianceFeatures: { gdpr: true, soc2: true, hipaa: true, pci: true, dpdp: true, abdm: false }, supportedRegions: ['us', 'eu', 'india', 'gov'], maxTokens: 200000, models: ['anthropic.claude-opus-4', 'anthropic.claude-sonnet-4', 'amazon.titan-text'], certified: true },
+    { slug: 'groq', name: 'Groq', company: 'Groq, Inc.', baseUrl: 'https://api.groq.com/openai/v1', apiStyle: 'openai', complianceFeatures: { gdpr: false, soc2: false, hipaa: false, pci: false, dpdp: false, abdm: false }, supportedRegions: ['us'], maxTokens: 32000, models: ['llama-3.3-70b', 'mixtral-8x7b', 'gemma2-9b'], certified: false },
+    { slug: 'together', name: 'Together AI', company: 'Together AI, Inc.', baseUrl: 'https://api.together.xyz/v1', apiStyle: 'openai', complianceFeatures: { gdpr: false, soc2: false, hipaa: false, pci: false, dpdp: false, abdm: false }, supportedRegions: ['us'], maxTokens: 32000, models: ['meta-llama/Llama-3.3-70B', 'mistralai/Mixtral-8x22B'], certified: false },
+    { slug: 'openrouter', name: 'OpenRouter', company: 'OpenRouter, Inc.', baseUrl: 'https://openrouter.ai/api/v1', apiStyle: 'openai', complianceFeatures: { gdpr: false, soc2: false, hipaa: false, pci: false, dpdp: false, abdm: false }, supportedRegions: ['global'], maxTokens: 200000, models: ['openai/gpt-4o', 'anthropic/claude-opus-4', 'meta-llama/llama-3.3-70b'], certified: false },
+    { slug: 'ollama', name: 'Ollama', company: 'Ollama (Local)', baseUrl: 'http://localhost:11434', apiStyle: 'custom', complianceFeatures: { gdpr: true, soc2: true, hipaa: true, pci: true, dpdp: true, abdm: true }, supportedRegions: ['local'], maxTokens: 32000, models: ['llama3.3', 'mistral', 'codellama', 'phi3'], certified: true },
+  ];
+
+  for (const p of aiProviders) {
+    await prisma.aiProvider.create({
+      data: {
+        ...p,
+        complianceFeatures: p.complianceFeatures as never,
+      },
+    });
+  }
+  console.log(`  AI Providers: ${aiProviders.length} created`);
+
   console.log('\nSeed complete!');
   console.log(`\nUse these to test:`);
   console.log(`  Organization ID: ${org.id}`);
   console.log(`  Project ID: ${project.id}`);
-  console.log(`  API Key: ${rawKey}`);
+  console.log(`  API Key prefix: ${apiKey.keyPrefix}...`);
+  console.log(`  (To create a new key, use POST /v1/api-keys)`);
 }
 
 seed()

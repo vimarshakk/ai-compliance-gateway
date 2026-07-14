@@ -1,0 +1,138 @@
+---
+title: Security Overview
+description: ACG's security architecture and controls
+---
+
+# Security Overview
+
+ACG implements defense-in-depth security across all layers. This document covers authentication, authorization, data protection, and compliance controls.
+
+## Authentication
+
+### API Key Authentication
+
+API keys authenticate machine-to-machine communication:
+
+```bash
+# Send requests with API key
+curl -H "X-Api-Key: your-key-here" \
+  http://localhost:3000/chat/completions
+```
+
+**Key Properties:**
+- Keys are hashed (SHA-256) before storage
+- Keys are scoped to projects and organizations
+- Keys can have expiration dates
+- Key rotation is supported
+
+### JWT/SSO Authentication
+
+For dashboard and user-facing applications:
+
+1. User authenticates with Keycloak
+2. JWT token is issued
+3. Token is validated on each request
+4. User context is attached to request
+
+### RBAC
+
+Five roles with hierarchical permissions:
+
+| Role | Permissions |
+|------|------------|
+| Owner | Full access + billing + delete |
+| Admin | Manage users, policies, settings |
+| Compliance Officer | View/edit compliance, audit |
+| Developer | Create projects, manage keys |
+| Viewer | Read-only access |
+
+## Data Protection
+
+### Encryption
+
+| State | Method | Standard |
+|-------|--------|----------|
+| In Transit | TLS 1.3 | Industry standard |
+| At Rest | AES-256 | Database encryption |
+| API Keys | SHA-256 | One-way hash |
+| JWT | RS256 | Asymmetric signing |
+
+### Database Security
+
+- PostgreSQL with SSL connections
+- Row-level security enabled
+- Connection pooling (pgbouncer)
+- Regular backups
+- Access restricted to internal network
+
+## Policy Enforcement
+
+### Fail-Closed Model
+
+ACG's default state is deny. When policy engines are unavailable, requests are denied:
+
+```typescript
+try {
+  const result = await opa.evaluate(input);
+  if (result.allow) return next();
+  return reply.code(403).send({ error: 'Denied' });
+} catch (error) {
+  // OPA unreachable → DENY
+  return reply.code(503).send({ error: 'Policy engine unavailable' });
+}
+```
+
+### OPA Integration
+
+Policy rules are written in Rego and evaluated deterministically:
+
+```rego
+# Example: Deny requests with PII in prompts
+deny contains msg if {
+  input.body.messages[_].content contains "SSN"
+  msg := "SSN detected in request"
+}
+```
+
+## Audit Trail
+
+Every action produces an audit entry:
+
+```json
+{
+  "id": "evt_123",
+  "timestamp": "2024-12-01T10:00:00Z",
+  "actor": { "type": "api_key", "id": "key_456" },
+  "action": "chat.completions.create",
+  "result": "denied",
+  "reason": "HIPAA_PHI_DETECTED"
+}
+```
+
+## Supply Chain Security
+
+- **SBOM** — Software Bill of Materials for all releases
+- **AI-BOM** — AI Bill of Materials for AI components
+- **Dependency scanning** — Dependabot for automated updates
+- **Container scanning** — Trivy for vulnerability detection
+- **Image signing** — Cosign for container image verification
+
+## Compliance Controls
+
+ACG implements controls aligned with:
+
+- OWASP ASVS Level 2
+- OWASP LLM Top 10
+- SOC 2 Type II
+- ISO 27001
+- NIST Cybersecurity Framework
+
+## Reporting Security Issues
+
+See [SECURITY.md](../../SECURITY.md) for how to report vulnerabilities.
+
+## Further Reading
+
+- [Threat Model](../../THREAT_MODEL.md)
+- [Security Model](../../SECURITY_MODEL.md)
+- [Authentication](../getting-started/authentication.mdx)

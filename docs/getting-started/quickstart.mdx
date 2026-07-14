@@ -1,0 +1,106 @@
+---
+title: Quick Start
+description: Get ACG running in 5 minutes
+---
+
+# Quick Start
+
+Get ACG running in 5 minutes. This guide walks you through installation, configuration, and your first compliance scan.
+
+## Prerequisites
+
+- Node.js 18+
+- Docker & Docker Compose (optional)
+- An AI provider API key (OpenAI, Anthropic, etc.)
+
+## Option 1: CLI Only
+
+The fastest way to get started:
+
+```bash
+# Install the CLI
+npm install -g @acg/cli
+
+# Verify installation
+acg --version
+
+# Scan your project
+acg scan .
+
+# Check compliance score
+acg score .
+```
+
+## Option 2: Full Stack
+
+For the complete experience with gateway, admin API, and dashboard:
+
+```bash
+# Clone the repository
+git clone https://github.com/acg-ai/acg.git
+cd acg
+
+# Start all services
+docker compose up -d
+
+# Verify services are running
+acg doctor
+
+# Access the dashboard
+open http://localhost:3000
+```
+
+## Option 3: SDK Integration
+
+Integrate ACG into your application:
+
+```typescript
+import { ACG } from '@acg/sdk';
+
+const acg = new ACG({
+  apiKey: process.env.ACG_API_KEY,
+  gateway: 'http://localhost:3000',
+});
+
+// Chat with compliance enforcement
+const response = await acg.chat.completions.create({
+  model: 'gpt-4o-mini',
+  messages: [
+    { role: 'user', content: 'Summarize patient records...' },
+  ],
+});
+
+console.log(response.choices[0].message.content);
+```
+
+## What Just Happened?
+
+1. **Request intercepted** — Your request went through ACG Gateway
+2. **Policy evaluated** — OPA checked compliance rules
+3. **Risk assessed** — Risk engine evaluated the request
+4. **Audit logged** — Everything was recorded in the audit trail
+5. **Response proxied** — The response was checked and forwarded
+
+## Next Steps
+
+- [Concepts](concepts.mdx) — Understand ACG's architecture
+- [Authentication](authentication.mdx) — Set up API keys and SSO
+- [Compliance Packs](../compliance/) — Configure compliance frameworks
+- [Deployment](../deployments/) — Production deployment guide
+
+## Troubleshooting
+
+If you encounter issues:
+
+```bash
+# Check service status
+acg doctor
+
+# View logs
+docker compose logs -f gateway
+
+# Test connectivity
+acg health
+```
+
+See [Troubleshooting](../troubleshooting/) for common issues.

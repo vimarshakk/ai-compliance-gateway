@@ -1,0 +1,109 @@
+---
+title: "Tutorial: Your First Compliance Scan"
+description: "Scan your codebase for AI compliance issues in under 5 minutes"
+---
+
+## Overview
+
+This tutorial walks you through scanning your project for AI compliance issues using the ACG CLI. You'll learn how to detect secrets, model references, guardrails, and generate a compliance score.
+
+**Time:** 5 minutes
+**Prerequisites:** ACG CLI installed (`npm install -g @acg/cli`)
+
+## Step 1: Initialize Your Project
+
+```bash
+# Navigate to your project
+cd your-ai-project
+
+# Run a compliance scan
+acg scan
+```
+
+The scanner analyzes your codebase for:
+- **Secrets** — API keys, tokens, passwords hardcoded in source
+- **Model references** — OpenAI, Anthropic, or other AI model usage
+- **Guardrails** — OPA, NeMo Guardrails, Guardrails AI presence
+- **Policies** — Compliance policy files and configurations
+- **Environment hygiene** — .env files, config exposure
+
+## Step 2: Understand the Output
+
+```json
+{
+  "secrets": [
+    { "type": "API Key", "file": "src/config.ts", "line": 42, "severity": "high" }
+  ],
+  "models": [
+    { "provider": "openai", "model": "gpt-4", "file": "src/chat.ts", "line": 15 }
+  ],
+  "guardrails": [],
+  "policies": [],
+  "summary": {
+    "totalFindings": 1,
+    "bySeverity": { "high": 1, "medium": 0, "low": 0 }
+  }
+}
+```
+
+## Step 3: Generate a BOM
+
+```bash
+# Generate an AI Bill of Materials
+acg bom
+```
+
+The BOM catalogs every AI component in your project:
+- Models (GPT-4, Claude, Llama)
+- Frameworks (LangChain, LlamaIndex)
+- Databases (Redis, PostgreSQL)
+- APIs (OpenAI, Anthropic)
+- Policies (OPA, Guardrails)
+
+## Step 4: Get a Compliance Score
+
+```bash
+# Calculate your compliance score
+acg score
+```
+
+Output:
+```
+AI Compliance Score: 72/100
+
+Breakdown:
+  Secret Management:     18/25  ⚠️  1 secret found
+  SDK Coverage:          16/20  ✓
+  Environment Hygiene:   12/15  ✓
+  Guardrail Coverage:    12/20  ⚠️  No guardrails detected
+  Observability:          8/10  ✓
+  Prompt Hygiene:         6/10  ⚠️  No prompt templates found
+```
+
+## Step 5: Fix Issues
+
+Based on the score breakdown, address the highest-impact items:
+
+1. **Move secrets to environment variables**
+   ```bash
+   # Move API keys from source to .env
+   echo "OPENAI_API_KEY=sk-..." >> .env
+   echo ".env" >> .gitignore
+   ```
+
+2. **Add a guardrail**
+   ```bash
+   # Install NeMo Guardrails
+   npm install @nemorailrails/core
+   ```
+
+3. **Re-scan to verify**
+   ```bash
+   acg scan && acg score
+   ```
+
+## Next Steps
+
+- [Setting Up Policies](/cookbooks/custom-policy) — Create custom compliance policies
+- [CI/CD Integration](/cookbooks/ci-cd-integration) — Run scans in GitHub Actions
+- [Compliance Packs](/compliance/overview) — Enable DPDP, HIPAA, or GDPR packs

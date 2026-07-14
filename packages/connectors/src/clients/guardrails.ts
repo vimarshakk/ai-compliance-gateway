@@ -1,9 +1,10 @@
 import { BaseConnector } from './base.js';
 import type { GuardrailsConnector } from '../interfaces/index.js';
 
+// FAIL CLOSED: When NeMo is unreachable, block content (not allow all)
 const DEFAULT_GUARDRAILS_RESULT = {
-  response: { role: 'assistant', content: '' },
-  rails_output: { input: { triggered: false }, output: { triggered: false } },
+  response: { role: 'assistant', content: 'Content blocked: guardrails service (NeMo) is unavailable' },
+  rails_output: { input: { triggered: true, reason: 'Guardrails service unavailable — blocking for safety' }, output: { triggered: true, reason: 'Guardrails service unavailable — blocking for safety' } },
 };
 
 export class NeMoGuardrailsConnector extends BaseConnector implements GuardrailsConnector {

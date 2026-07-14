@@ -1,0 +1,321 @@
+openapi: 3.1.0
+info:
+  title: AI Compliance Gateway API
+  description: |
+    The ACG Gateway API provides OpenAI-compatible endpoints with built-in compliance enforcement.
+
+    ## Authentication
+    All requests require an API key via the `X-Api-Key` header.
+
+    ## Compliance
+    Every request is evaluated against compliance policies. Denials return 403 with the violating rule.
+
+    ## Streaming
+    The `/chat/completions` endpoint supports Server-Sent Events (SSE) streaming.
+  version: 2.6.0
+  contact:
+    name: ACG Team
+    email: hello@acg.dev
+    url: https://acg.dev
+  license:
+    name: Apache 2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0
+
+servers:
+  - url: http://localhost:3000
+    description: Local development
+  - url: https://gateway.acg.dev
+    description: Production
+
+security:
+  - apiKey: []
+
+tags:
+  - name: Chat
+    description: OpenAI-compatible chat completions
+  - name: Moderations
+    description: Content moderation
+  - name: Health
+    description: Service health checks
+
+paths:
+  /chat/completions:
+    post:
+      tags: [Chat]
+      summary: Create chat completion
+      description: |
+        OpenAI-compatible chat completion with compliance enforcement.
+
+        Supports:
+        - Standard request/response
+        - Server-Sent Events (SSE) streaming
+        - Compliance pack selection
+        - Provider routing
+      operationId: createChatCompletion
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChatCompletionRequest'
+            examples:
+              standard:
+                summary: Standard request
+                value:
+                  model: gpt-4o-mini
+                  messages:
+                    - role: user
+                      content: Hello, world!
+              withCompliance:
+                summary: With compliance pack
+                value:
+                  model: gpt-4o-mini
+                  messages:
+                    - role: user
+                      content: Summarize patient records
+                  compliance:
+                    pack: hipaa
+              streaming:
+                summary: With streaming
+                value:
+                  model: gpt-4o-mini
+                  messages:
+                    - role: user
+                      content: Tell me a story
+                  stream: true
+      responses:
+        '200':
+          description: Successful completion
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChatCompletionResponse'
+        '401':
+          description: Invalid or missing API key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Denied by compliance policy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PolicyDenial'
+        '429':
+          description: Rate limit exceeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '503':
+          description: Policy engine unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /moderations:
+    post:
+      tags: [Moderations]
+      summary: Create moderation
+      description: Content moderation with compliance checks.
+      operationId: createModeration
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                input:
+                  oneOf:
+                    - type: string
+                    - type: array
+                      items:
+                        type: string
+                model:
+                  type: string
+                  default: text-moderation-latest
+      responses:
+        '200':
+          description: Moderation results
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  model:
+                    type: string
+                  results:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        flagged:
+                          type: boolean
+                        categories:
+                          type: object
+                        category_scores:
+                          type: object
+
+  /health:
+    get:
+      tags: [Health]
+      summary: Health check
+      description: Returns service health status.
+      operationId: getHealth
+      security: []
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [ok]
+                  version:
+                    type: string
+                  uptime:
+                    type: number
+
+components:
+  securitySchemes:
+    apiKey:
+      type: apiKey
+      in: header
+      name: X-Api-Key
+      description: API key for authentication
+
+  schemas:
+    ChatCompletionRequest:
+      type: object
+      required: [model, messages]
+      properties:
+        model:
+          type: string
+          description: Model to use for completion
+        messages:
+          type: array
+          items:
+            $ref: '#/components/schemas/Message'
+          description: List of messages
+        temperature:
+          type: number
+          minimum: 0
+          maximum: 2
+          default: 1
+        max_tokens:
+          type: integer
+          minimum: 1
+        stream:
+          type: boolean
+          default: false
+        compliance:
+          type: object
+          properties:
+            pack:
+              type: string
+              description: Compliance pack to enforce
+            rules:
+              type: array
+              items:
+                type: string
+              description: Specific rules to enforce
+            strict:
+              type: boolean
+              default: true
+              description: Strict mode (fail on any violation)
+
+    Message:
+      type: object
+      required: [role, content]
+      properties:
+        role:
+          type: string
+          enum: [system, user, assistant]
+        content:
+          type: string
+
+    ChatCompletionResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        object:
+          type: string
+          enum: [chat.completion]
+        created:
+          type: integer
+        model:
+          type: string
+        choices:
+          type: array
+          items:
+            type: object
+            properties:
+              index:
+                type: integer
+              message:
+                $ref: '#/components/schemas/Message'
+              finish_reason:
+                type: string
+                enum: [stop, length, content_filter]
+        usage:
+          type: object
+          properties:
+            prompt_tokens:
+              type: integer
+            completion_tokens:
+              type: integer
+            total_tokens:
+              type: integer
+        compliance:
+          type: object
+          properties:
+            evaluated:
+              type: boolean
+            allowed:
+              type: boolean
+            pack:
+              type: string
+            violations:
+              type: array
+              items:
+                type: object
+                properties:
+                  rule:
+                    type: string
+                  message:
+                    type: string
+                  severity:
+                    type: string
+                    enum: [low, medium, high, critical]
+
+    PolicyDenial:
+      type: object
+      properties:
+        error:
+          type: string
+          enum: [policy_denied]
+        message:
+          type: string
+        rule:
+          type: string
+        reason:
+          type: string
+        pack:
+          type: string
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+        message:
+          type: string

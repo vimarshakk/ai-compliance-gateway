@@ -1,0 +1,17 @@
+{
+  "name": "acg-nodejs-example",
+  "version": "1.0.0",
+  "description": "AI Compliance Gateway — Node.js quickstart",
+  "type": "module",
+  "scripts": {
+    "start": "node --loader tsx/esm src/index.ts",
+    "dev": "tsx watch src/index.ts"
+  },
+  "dependencies": {
+    "@acg/sdk": "workspace:*"
+  },
+  "devDependencies": {
+    "tsx": "^4.19.0",
+    "typescript": "^5.7.0"
+  }
+}

@@ -2,38 +2,34 @@ package acg.finance
 
 import rego.v1
 
-default allow = false
+default allow := false
 
-allow {
+allow if {
   count(deny) == 0
 }
 
-deny[msg] {
+deny contains msg if {
   input.contains_pii
   msg := "Finance pack: PII detected in financial data context"
 }
 
-deny[msg] {
-  not contains(input.compliance_packs, "pci-dss")
+deny contains msg if {
+  count([x | x := input.compliance_packs[_]; x == "pci-dss"]) == 0
   msg := "Finance pack requires PCI-DSS compliance pack"
 }
 
-deny[msg] {
+deny contains msg if {
   contains(input.prompt, "credit card")
   contains(input.prompt, "number")
   msg := "Credit card data detected in prompt"
 }
 
-deny[msg] {
+deny contains msg if {
   input.model in ["gpt-3.5-turbo"]
   msg := "Finance pack requires minimum model tier of GPT-4o-mini"
 }
 
-deny[msg] {
+deny contains msg if {
   input.provider == "ollama"
   msg := "Finance pack does not allow local models for financial data"
-}
-
-contains(arr, val) {
-  arr[_] == val
 }

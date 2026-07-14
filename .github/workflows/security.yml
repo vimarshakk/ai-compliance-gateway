@@ -1,0 +1,71 @@
+name: Security Scan
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    - cron: '0 6 * * 1'
+
+jobs:
+  codeql:
+    name: CodeQL Analysis
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: github/codeql-action/init@v3
+        with:
+          languages: javascript-typescript
+      - uses: github/codeql-action/autobuild@v3
+      - uses: github/codeql-action/analyze@v3
+
+  trivy:
+    name: Trivy Container Scan
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        service:
+          - gateway
+          - admin
+          - dashboard
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build image
+        run: |
+          docker build -t acg-${{ matrix.service }}:scan \
+            -f deployments/docker/Dockerfile.${{ matrix.service }} .
+      - uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: acg-${{ matrix.service }}:scan
+          format: sarif
+          output: trivy-${{ matrix.service }}.sarif
+          severity: CRITICAL,HIGH
+      - uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: trivy-${{ matrix.service }}.sarif
+          category: trivy-${{ matrix.service }}
+
+  dependency-review:
+    name: Dependency Review
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/dependency-review-action@v4
+        with:
+          fail-on-severity: high
+          comment-summary-in-pr: always
+
+  secret-scanning:
+    name: Secret Scanning
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Scan for secrets
+        uses: trufflesecurity/trufflehog@main
+        with:
+          extra_args: --only-verified

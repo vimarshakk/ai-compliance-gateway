@@ -1,7 +1,8 @@
 import { BaseConnector } from './base.js';
 import type { PolicyEngineConnector } from '../interfaces/index.js';
 
-const DEFAULT_POLICY_RESULT = { allow: true, deny_reasons: [] as string[] };
+// FAIL CLOSED: When OPA is unreachable, deny all requests (not allow all)
+const DEFAULT_POLICY_RESULT = { allow: false, deny_reasons: ['Policy engine (OPA) is unavailable — denying for safety'] as string[] };
 
 export class OPAConnector extends BaseConnector implements PolicyEngineConnector {
   constructor(baseUrl: string) {
@@ -9,7 +10,7 @@ export class OPAConnector extends BaseConnector implements PolicyEngineConnector
   }
 
   async evaluate(params: { input: Record<string, unknown> }) {
-    const result = await this.requestGraceful<{ result: unknown }>('POST', '/v1/data/acg/evaluate', { result: DEFAULT_POLICY_RESULT }, { input: params.input });
+    const result = await this.requestGraceful<{ result: unknown }>('POST', '/v1/data/acg', { result: DEFAULT_POLICY_RESULT }, { input: params.input });
     return result;
   }
 

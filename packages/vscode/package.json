@@ -1,0 +1,110 @@
+{
+  "name": "acg-vscode",
+  "displayName": "AI Compliance Gateway",
+  "description": "Real-time AI compliance scanning in VS Code",
+  "version": "0.1.0",
+  "publisher": "acg-ai",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": ["Linters", "Security", "Other"],
+  "keywords": ["ai", "compliance", "security", "opa", "pii", "gdpr", "hipaa"],
+  "activationEvents": ["onStartupFinished"],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "acg.scan",
+        "title": "ACG: Scan Workspace"
+      },
+      {
+        "command": "acg.score",
+        "title": "ACG: Show Compliance Score"
+      },
+      {
+        "command": "acg.bom",
+        "title": "ACG: Generate AI Bill of Materials"
+      },
+      {
+        "command": "acg.packs",
+        "title": "ACG: List Compliance Packs"
+      },
+      {
+        "command": "acg.configure",
+        "title": "ACG: Configure Settings"
+      }
+    ],
+    "configuration": {
+      "title": "AI Compliance Gateway",
+      "properties": {
+        "acg.gatewayUrl": {
+          "type": "string",
+          "default": "http://localhost:3000",
+          "description": "ACG Gateway URL"
+        },
+        "acg.adminUrl": {
+          "type": "string",
+          "default": "http://localhost:3002",
+          "description": "ACG Admin API URL"
+        },
+        "acg.apiKey": {
+          "type": "string",
+          "default": "",
+          "description": "ACG API Key"
+        },
+        "acg.scanOnSave": {
+          "type": "boolean",
+          "default": true,
+          "description": "Scan workspace on file save"
+        },
+        "acg.lintOnType": {
+          "type": "boolean",
+          "default": false,
+          "description": "Scan on every keystroke (slower)"
+        },
+        "acg.compliancePack": {
+          "type": "string",
+          "default": "",
+          "description": "Default compliance pack (dpdp, hipaa, gdpr, pci-dss, soc2)"
+        },
+        "acg.showInStatusbar": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show compliance score in status bar"
+        }
+      }
+    },
+    "languages": [
+      {
+        "id": "typescript",
+        "extensions": [".ts", ".tsx"]
+      },
+      {
+        "id": "javascript",
+        "extensions": [".js", ".jsx", ".mjs"]
+      },
+      {
+        "id": "python",
+        "extensions": [".py"]
+      },
+      {
+        "id": "go",
+        "extensions": [".go"]
+      }
+    ]
+  },
+  "scripts": {
+    "build": "esbuild src/extension.ts --bundle --outdir=dist --external:vscode --format=cjs --platform=node",
+    "watch": "npm run build -- --watch",
+    "lint": "eslint src",
+    "package": "vsce package"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.85.0",
+    "@types/node": "^22.0.0",
+    "esbuild": "^0.20.0",
+    "eslint": "^9.0.0",
+    "@vscode/vsce": "^2.0.0",
+    "typescript": "^5.7.0"
+  }
+}

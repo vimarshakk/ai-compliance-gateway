@@ -1,0 +1,97 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: acg-postgres
+  labels:
+    app: acg
+    component: postgres
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: acg
+      component: postgres
+  template:
+    metadata:
+      labels:
+        app: acg
+        component: postgres
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:15-alpine
+          ports:
+            - containerPort: 5432
+              protocol: TCP
+          env:
+            - name: POSTGRES_DB
+              value: acg
+            - name: POSTGRES_USER
+              value: acg
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: acg-secrets
+                  key: postgres-password
+          volumeMounts:
+            - name: postgres-data
+              mountPath: /var/lib/postgresql/data
+          livenessProbe:
+            exec:
+              command:
+                - pg_isready
+                - -U
+                - acg
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          readinessProbe:
+            exec:
+              command:
+                - pg_isready
+                - -U
+                - acg
+            initialDelaySeconds: 5
+            periodSeconds: 5
+          resources:
+            limits:
+              cpu: 500m
+              memory: 512Mi
+            requests:
+              cpu: 250m
+              memory: 256Mi
+      volumes:
+        - name: postgres-data
+          persistentVolumeClaim:
+            claimName: acg-postgres-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: acg-postgres
+  labels:
+    app: acg
+    component: postgres
+spec:
+  type: ClusterIP
+  ports:
+    - port: 5432
+      targetPort: 5432
+      protocol: TCP
+      name: postgres
+  selector:
+    app: acg
+    component: postgres
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: acg-postgres-pvc
+  labels:
+    app: acg
+    component: postgres
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi

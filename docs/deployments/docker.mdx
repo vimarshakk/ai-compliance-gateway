@@ -1,0 +1,128 @@
+---
+title: "Docker Deployment"
+description: "Deploy ACG with Docker Compose"
+---
+
+## Prerequisites
+
+- Docker 24+
+- Docker Compose v2
+- 4GB+ RAM recommended
+
+## Quick Start
+
+```bash
+# Clone the repo
+git clone https://github.com/your-org/ai-compliance-gateway.git
+cd ai-compliance-gateway
+
+# Copy environment template
+cp .env.example .env
+
+# Edit .env with your API keys
+nano .env
+
+# Start all services
+make dev
+```
+
+## Services
+
+| Service | Port | Description |
+|---------|------|-------------|
+| Gateway | 3000 | API proxy |
+| Admin | 3002 | Management API |
+| Dashboard | 3004 | Web UI |
+| PostgreSQL | 5432 | Primary database |
+| Redis | 6379 | Cache |
+| NATS | 4222 | Event bus |
+| Keycloak | 8081 | Authentication |
+| Prometheus | 9090 | Metrics |
+| Grafana | 3005 | Dashboards |
+
+## Environment Variables
+
+```bash
+# Required
+OPENAI_API_KEY=sk-your-openai-key
+ANTHROPIC_API_KEY=sk-ant-your-anthropic-key
+
+# Database
+POSTGRES_PASSWORD=your-secure-password
+
+# Auth
+KEYCLOAK_ADMIN_PASSWORD=your-admin-password
+NEXTAUTH_SECRET=your-nextauth-secret
+
+# Encryption
+SALT=your-salt
+ENCRYPTION_KEY=your-32-char-encryption-key
+```
+
+## Production Deployment
+
+```bash
+# Start with production profile
+make up
+
+# Or with specific profiles
+docker compose --profile core --profile observability up -d
+```
+
+## SSL/TLS
+
+For production, use a reverse proxy (nginx, Caddy, or Traefik):
+
+```nginx
+server {
+    listen 443 ssl;
+    server_name api.yourdomain.com;
+
+    ssl_certificate /etc/letsencrypt/live/api.yourdomain.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/api.yourdomain.com/privkey.pem;
+
+    location / {
+        proxy_pass http://localhost:3000;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+```
+
+## Health Checks
+
+```bash
+# Check all services
+docker compose ps
+
+# Check specific service
+docker compose logs gateway
+
+# Check health endpoint
+curl http://localhost:3000/health
+```
+
+## Troubleshooting
+
+### Port conflicts
+
+```bash
+# Check what's using port 3000
+lsof -i :3000
+
+# Kill the process
+kill -9 <PID>
+```
+
+### Database connection issues
+
+```bash
+# Check PostgreSQL is running
+docker compose logs postgres
+
+# Reset database
+docker compose down -v
+docker compose up postgres
+```

@@ -2,38 +2,34 @@ package acg.india
 
 import rego.v1
 
-default allow = false
+default allow := false
 
-allow {
+allow if {
   count(deny) == 0
 }
 
-deny[msg] {
+deny contains msg if {
   input.contains_pii
   msg := "India compliance pack: PII detected - must comply with DPDP Act"
 }
 
-deny[msg] {
-  not contains(input.compliance_packs, "dpdp")
+deny contains msg if {
+  count([x | x := input.compliance_packs[_]; x == "dpdp"]) == 0
   msg := "India pack requires DPDP compliance pack"
 }
 
-deny[msg] {
-  input.prompt contains "Aadhaar"
+deny contains msg if {
+  contains(input.prompt, "Aadhaar")
   msg := "Aadhaar number detected - restricted under UIDAI guidelines"
 }
 
-deny[msg] {
-  input.prompt contains "PAN"
-  not input.prompt contains "pan-"
+deny contains msg if {
+  contains(input.prompt, "PAN")
+  not contains(input.prompt, "pan-")
   msg := "Potential PAN number detected - restricted under IT Act"
 }
 
-deny[msg] {
+deny contains msg if {
   input.provider == "ollama"
   msg := "India pack: Local models require additional approval for data residency"
-}
-
-contains(arr, val) {
-  arr[_] == val
 }

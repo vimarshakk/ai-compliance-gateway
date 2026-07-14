@@ -1,39 +1,69 @@
 FROM node:22-alpine AS base
 WORKDIR /app
+RUN apk add --no-cache dumb-init
 
 FROM base AS deps
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY apps/gateway/package.json ./apps/gateway/
 COPY packages/shared/package.json ./packages/shared/
+COPY packages/contracts/package.json ./packages/contracts/
 COPY packages/connectors/package.json ./packages/connectors/
 COPY packages/workflows/package.json ./packages/workflows/
-COPY packages/contracts/package.json ./packages/contracts/
-RUN corepack enable && pnpm install --frozen-lockfile
+COPY packages/ai-router/package.json ./packages/ai-router/
+COPY packages/risk-engine/package.json ./packages/risk-engine/
+COPY packages/governance-engine/package.json ./packages/governance-engine/
+COPY packages/compliance-engine/package.json ./packages/compliance-engine/
+RUN corepack enable && pnpm install --frozen-lockfile --prod
 
 FROM base AS builder
 COPY --from=deps /app/node_modules ./node_modules
 COPY --from=deps /app/apps/gateway/node_modules ./apps/gateway/node_modules
 COPY --from=deps /app/packages/shared/node_modules ./packages/shared/node_modules
+COPY --from=deps /app/packages/contracts/node_modules ./packages/contracts/node_modules
 COPY --from=deps /app/packages/connectors/node_modules ./packages/connectors/node_modules
 COPY --from=deps /app/packages/workflows/node_modules ./packages/workflows/node_modules
-COPY --from=deps /app/packages/contracts/node_modules ./packages/contracts/node_modules
+COPY --from=deps /app/packages/ai-router/node_modules ./packages/ai-router/node_modules
+COPY --from=deps /app/packages/risk-engine/node_modules ./packages/risk-engine/node_modules
+COPY --from=deps /app/packages/governance-engine/node_modules ./packages/governance-engine/node_modules
+COPY --from=deps /app/packages/compliance-engine/node_modules ./packages/compliance-engine/node_modules
 COPY tsconfig.base.json ./
 COPY packages/shared/tsconfig.json ./packages/shared/
 COPY packages/shared/src ./packages/shared/src
+COPY packages/contracts/tsconfig.json ./packages/contracts/
+COPY packages/contracts/src ./packages/contracts/src
 COPY packages/connectors/tsconfig.json ./packages/connectors/
 COPY packages/connectors/src ./packages/connectors/src
 COPY packages/workflows/tsconfig.json ./packages/workflows/
 COPY packages/workflows/src ./packages/workflows/src
-COPY packages/contracts/tsconfig.json ./packages/contracts/
-COPY packages/contracts/src ./packages/contracts/src
+COPY packages/ai-router/tsconfig.json ./packages/ai-router/
+COPY packages/ai-router/src ./packages/ai-router/src
+COPY packages/risk-engine/tsconfig.json ./packages/risk-engine/
+COPY packages/risk-engine/src ./packages/risk-engine/src
+COPY packages/governance-engine/tsconfig.json ./packages/governance-engine/
+COPY packages/governance-engine/src ./packages/governance-engine/src
+COPY packages/compliance-engine/tsconfig.json ./packages/compliance-engine/
+COPY packages/compliance-engine/src ./packages/compliance-engine/src
 COPY apps/gateway/tsconfig.json ./apps/gateway/
 COPY apps/gateway/src ./apps/gateway/src
-RUN pnpm --filter @acg/shared build && pnpm --filter @acg/connectors build && pnpm --filter @acg/workflows build && pnpm --filter @acg/gateway build
+RUN pnpm --filter @acg/shared build && \
+    pnpm --filter @acg/contracts build && \
+    pnpm --filter @acg/connectors build && \
+    pnpm --filter @acg/ai-router build && \
+    pnpm --filter @acg/risk-engine build && \
+    pnpm --filter @acg/governance-engine build && \
+    pnpm --filter @acg/compliance-engine build && \
+    pnpm --filter @acg/workflows build && \
+    pnpm --filter @acg/gateway build
 
 FROM base AS runner
 ENV NODE_ENV=production
-COPY --from=builder /app/apps/gateway/dist ./dist
-COPY --from=builder /app/apps/gateway/node_modules ./node_modules
-COPY --from=builder /app/node_modules ./node_modules
+RUN addgroup -g 1001 -S acg && adduser -S acg -u 1001 -G acg
+COPY --from=builder --chown=acg:acg /app/apps/gateway/dist ./dist
+COPY --from=builder --chown=acg:acg /app/apps/gateway/node_modules ./node_modules
+COPY --from=builder --chown=acg:acg /app/node_modules ./node_modules
+USER acg
 EXPOSE 3000
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+  CMD node -e "fetch('http://localhost:3000/health/live').then(r=>{process.exit(r.ok?0:1)}).catch(()=>process.exit(1))"
+ENTRYPOINT ["dumb-init", "--"]
 CMD ["node", "dist/server.js"]

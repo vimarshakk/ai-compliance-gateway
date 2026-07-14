@@ -10,7 +10,17 @@ interface ServiceCheck {
 export async function healthRoute(app: FastifyInstance) {
   const connectors = (app as any).connectors as GatewayConnectors;
 
-  app.get('/', async (request, reply) => {
+  app.get('/', {
+    schema: {
+      tags: ['Health'],
+      summary: 'Gateway health status',
+      description: 'Returns health status of the gateway and all upstream services.',
+      response: {
+        200: { description: 'Healthy or degraded' },
+        503: { description: 'Unhealthy' },
+      },
+    },
+  }, async (request, reply) => {
     const services: Record<string, { status: string; latencyMs?: number }> = {};
 
     const checks: ServiceCheck[] = [
@@ -57,9 +67,13 @@ export async function healthRoute(app: FastifyInstance) {
     });
   });
 
-  app.get('/live', async () => ({ status: 'alive', timestamp: new Date().toISOString() }));
+  app.get('/live', {
+    schema: { tags: ['Health'], summary: 'Liveness probe', response: { 200: { description: 'Alive' } } },
+  }, async () => ({ status: 'alive', timestamp: new Date().toISOString() }));
 
-  app.get('/ready', async (request, reply) => {
+  app.get('/ready', {
+    schema: { tags: ['Health'], summary: 'Readiness probe', response: { 200: { description: 'Ready' }, 503: { description: 'Not ready' } } },
+  }, async (request, reply) => {
     const checks = await Promise.allSettled([
       connectors.litellm.healthCheck(),
       connectors.opa.healthCheck(),

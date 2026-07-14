@@ -1,0 +1,82 @@
+name: Trivy Container Security
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    - cron: '0 8 * * *'  # Daily at 8am UTC
+
+jobs:
+  scan-gateway:
+    name: Scan Gateway
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build Gateway image
+        run: |
+          docker build -t acg-gateway:test -f deployments/docker/Dockerfile.gateway .
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'acg-gateway:test'
+          format: 'sarif'
+          output: 'trivy-gateway.sarif'
+          severity: 'CRITICAL,HIGH'
+
+      - name: Upload Trivy scan results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: 'trivy-gateway.sarif'
+
+  scan-admin:
+    name: Scan Admin
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build Admin image
+        run: |
+          docker build -t acg-admin:test -f deployments/docker/Dockerfile.admin .
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'acg-admin:test'
+          format: 'sarif'
+          output: 'trivy-admin.sarif'
+          severity: 'CRITICAL,HIGH'
+
+      - name: Upload Trivy scan results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: 'trivy-admin.sarif'
+
+  scan-dashboard:
+    name: Scan Dashboard
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build Dashboard image
+        run: |
+          docker build -t acg-dashboard:test -f deployments/docker/Dockerfile.dashboard .
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'acg-dashboard:test'
+          format: 'sarif'
+          output: 'trivy-dashboard.sarif'
+          severity: 'CRITICAL,HIGH'
+
+      - name: Upload Trivy scan results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: 'trivy-dashboard.sarif'

@@ -1,0 +1,26 @@
+name: AI Compliance
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  compliance-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: AI Compliance Scan
+        uses: ./.github/actions/acg-scan
+        with:
+          score-threshold: '70'
+          fail-on-findings: 'true'
+
+  deploy:
+    needs: compliance-scan
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: echo "Deploy step — add your deployment logic here"

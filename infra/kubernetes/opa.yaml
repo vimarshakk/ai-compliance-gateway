@@ -1,0 +1,104 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: acg-opa
+  labels:
+    app: acg
+    component: opa
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: acg
+      component: opa
+  template:
+    metadata:
+      labels:
+        app: acg
+        component: opa
+    spec:
+      containers:
+        - name: opa
+          image: openpolicyagent/opa:latest-static
+          ports:
+            - containerPort: 8181
+              protocol: TCP
+          args:
+            - "run"
+            - "--server"
+            - "--addr=0.0.0.0:8181"
+            - "/policies"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8181
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8181
+            initialDelaySeconds: 5
+            periodSeconds: 5
+          resources:
+            limits:
+              cpu: 250m
+              memory: 256Mi
+            requests:
+              cpu: 125m
+              memory: 128Mi
+          volumeMounts:
+            - name: opa-policies
+              mountPath: /policies
+      volumes:
+        - name: opa-policies
+          configMap:
+            name: acg-opa-policies
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: acg-opa
+  labels:
+    app: acg
+    component: opa
+spec:
+  type: ClusterIP
+  ports:
+    - port: 8181
+      targetPort: 8181
+      protocol: TCP
+      name: opa
+  selector:
+    app: acg
+    component: opa
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: acg-opa-policies
+  labels:
+    app: acg
+    component: opa
+data:
+  "default.rego": |
+    package acg.default
+
+    default allow = false
+
+    # Allow requests with valid API keys
+    allow if {
+      input.headers["x-api-key"]
+      count(input.headers["x-api-key"]) > 0
+    }
+
+    # Deny requests with PII in prompts
+    deny contains msg if {
+      input.body.messages[_].content contains "SSN"
+      msg := "SSN detected in request"
+    }
+
+    deny contains msg if {
+      input.body.messages[_].content contains "credit card"
+      msg := "Credit card number detected in request"
+    }

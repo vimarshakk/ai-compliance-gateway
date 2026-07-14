@@ -17,8 +17,8 @@ const env = {
   OPA_URL: process.env.OPA_URL ?? 'http://opa:8181',
   GUARDRAILS_URL: process.env.GUARDRAILS_URL ?? 'http://nemo-guardrails:8000',
   OTEL_COLLECTOR_URL: process.env.OTEL_COLLECTOR_URL ?? 'http://otel-collector:4318',
-  NATS_URL: process.env.NATS_URL ?? 'http://nats:4222',
-  REDIS_URL: process.env.REDIS_URL ?? 'http://redis:6379',
+  NATS_URL: process.env.NATS_URL ?? 'nats://nats:4222',
+  REDIS_URL: process.env.REDIS_URL ?? 'redis://redis:6379',
 };
 
 export interface GatewayConnectors {
@@ -46,7 +46,7 @@ export function createConnectors(): GatewayConnectors {
   const redis = new RedisConnector(env.REDIS_URL);
 
   const promptWorkflow = new PromptWorkflow(nats, litellm, presidioAnalyzer, presidioAnonymizer, opa, guardrails, otel);
-  const moderationWorkflow = new ModerationWorkflow(nats);
+  const moderationWorkflow = new ModerationWorkflow(nats, presidioAnalyzer, presidioAnonymizer, opa, guardrails);
 
   const enhancedWorkflow = new EnhancedPromptWorkflow(
     nats, litellm, presidioAnalyzer, presidioAnonymizer, opa, guardrails, otel,

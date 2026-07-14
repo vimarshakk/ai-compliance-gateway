@@ -1,0 +1,54 @@
+name: SBOM Generation
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+    branches: [main]
+
+jobs:
+  generate-sbom:
+    name: Generate SBOM
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Generate npm SBOM
+        run: |
+          npx @cyclonedx/cyclonedx-npm --output-file sbom-npm.json --output-format json
+
+      - name: Generate Docker SBOM
+        run: |
+          docker build -t acg-gateway:sbom -f deployments/docker/Dockerfile.gateway .
+          docker sbom acg-gateway:sbom --output sbom-docker.json --format spdx-json
+
+      - name: Upload SBOM artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: sbom
+          path: |
+            sbom-npm.json
+            sbom-docker.json
+
+      - name: Attach SBOM to release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            sbom-npm.json
+            sbom-docker.json

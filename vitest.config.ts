@@ -13,6 +13,8 @@ export default defineConfig({
       '@acg/risk-engine': path.resolve(__dirname, 'packages/risk-engine/src/index.ts'),
       '@acg/governance-engine': path.resolve(__dirname, 'packages/governance-engine/src/index.ts'),
       '@acg/compliance-engine': path.resolve(__dirname, 'packages/compliance-engine/src/index.ts'),
+      '@acg/kernel': path.resolve(__dirname, 'packages/kernel/src/index.ts'),
+      '@acg/billing': path.resolve(__dirname, 'packages/billing/src/index.ts'),
       '@acg/admin': path.resolve(__dirname, 'apps/admin/src'),
     },
   },

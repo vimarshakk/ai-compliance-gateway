@@ -72,39 +72,127 @@ export class OTelCollectorConnector extends BaseConnector implements TelemetryCo
 }
 
 export class RedisConnector extends BaseConnector implements CacheConnector {
-  constructor(baseUrl: string) {
-    super('redis', baseUrl);
+  private client: any;
+  private connected = false;
+
+  constructor(private url: string) {
+    super('redis', url);
+  }
+
+  private async getClient() {
+    if (this.connected && this.client) return this.client;
+    try {
+      const IORedis = await import('ioredis');
+      const Redis = IORedis.default ?? IORedis;
+      this.client = new (Redis as any)(this.url, {
+        maxRetriesPerRequest: 3,
+        retryStrategy(times: number) {
+          return Math.min(times * 200, 3000);
+        },
+        lazyConnect: true,
+        connectTimeout: 5000,
+      });
+      await this.client.connect();
+      this.connected = true;
+      return this.client;
+    } catch (err) {
+      this.connected = false;
+      throw err;
+    }
   }
 
   async get(key: string) {
-    const res = await fetch(`${this.baseUrl}/get/${key}`, { signal: AbortSignal.timeout(5000) });
-    if (!res.ok) return null;
-    const data = await res.json() as { result: string };
-    return data.result;
+    try {
+      const client = await this.getClient();
+      return await client.get(key);
+    } catch {
+      return null;
+    }
   }
 
   async set(key: string, value: string, ttlSeconds?: number) {
-    const path = ttlSeconds ? `/set/${key}/${encodeURIComponent(value)}?EX=${ttlSeconds}` : `/set/${key}/${encodeURIComponent(value)}`;
-    await fetch(`${this.baseUrl}${path}`, { signal: AbortSignal.timeout(5000) });
+    try {
+      const client = await this.getClient();
+      if (ttlSeconds) {
+        await client.setex(key, ttlSeconds, value);
+      } else {
+        await client.set(key, value);
+      }
+    } catch {
+      // Redis unavailable — fail silently for cache
+    }
   }
 
   async del(key: string) {
-    await fetch(`${this.baseUrl}/del/${key}`, { signal: AbortSignal.timeout(5000) });
+    try {
+      const client = await this.getClient();
+      await client.del(key);
+    } catch {
+      // Redis unavailable — fail silently
+    }
+  }
+
+  async disconnect() {
+    if (this.client) {
+      await this.client.quit();
+      this.connected = false;
+    }
   }
 }
 
 export class NATSConnector extends BaseConnector implements EventBusConnector {
-  constructor(baseUrl: string) {
-    super('nats', baseUrl);
+  private nc: any;
+  private connected = false;
+
+  constructor(private url: string) {
+    super('nats', url);
+  }
+
+  private async getConnection() {
+    if (this.connected && this.nc) return this.nc;
+    try {
+      const { connect } = await import('nats');
+      this.nc = await connect({ servers: this.url });
+      this.connected = true;
+      return this.nc;
+    } catch (err) {
+      this.connected = false;
+      throw err;
+    }
   }
 
   async publish(subject: string, data: unknown) {
-    await this.request<unknown>('POST', `/publish/${subject}`, data);
+    try {
+      const nc = await this.getConnection();
+      const payload = typeof data === 'string' ? data : JSON.stringify(data);
+      nc.publish(subject, payload);
+    } catch {
+      // NATS unavailable — fire-and-forget
+    }
   }
 
   async subscribe(subject: string, handler: (data: unknown) => void) {
-    const eventSource = new EventSource(`${this.baseUrl}/subscribe/${subject}`);
-    eventSource.onmessage = (event) => handler(JSON.parse(event.data));
+    try {
+      const nc = await this.getConnection();
+      const sub = nc.subscribe(subject);
+      (async () => {
+        for await (const msg of sub) {
+          try {
+            const parsed = JSON.parse(new TextDecoder().decode(msg.data));
+            handler(parsed);
+          } catch { /* skip malformed messages */ }
+        }
+      })();
+    } catch {
+      // NATS unavailable — subscribe is a no-op
+    }
+  }
+
+  async disconnect() {
+    if (this.nc) {
+      await this.nc.drain();
+      this.connected = false;
+    }
   }
 }
 
