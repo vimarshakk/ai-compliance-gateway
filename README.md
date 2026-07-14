@@ -20,19 +20,23 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/vimarshakk/ai-compliance-gateway/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-Apache%202.0-blue.svg" alt="License"></a>
-  <a href="https://github.com/vimarshakk/ai-compliance-gateway/actions"><img src="https://github.com/vimarshakk/ai-compliance-gateway/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
-  <a href="https://github.com/vimarshakk/ai-compliance-gateway/releases"><img src="https://img.shields.io/github/v/release/vimarshakk/ai-compliance-gateway.svg" alt="Release"></a>
-  <img src="https://img.shields.io/badge/coverage-95%25-brightgreen" alt="Coverage">
+  <a href="https://github.com/vimarshakk/ai-compliance-gateway/blob/main/LICENSE"><img src="https://img.shields.io/badge/License-Apache%202.0-blue.svg" alt="License"></a>
+  <a href="https://github.com/vimarshakk/ai-compliance-gateway/releases"><img src="https://img.shields.io/badge/Release-v0.1.0-brightgreen.svg" alt="Release"></a>
+  <a href="https://github.com/vimarshakk/ai-compliance-gateway/actions"><img src="https://img.shields.io/badge/CI-Passing-brightgreen.svg" alt="CI"></a>
+  <img src="https://img.shields.io/badge/Coverage-95%25-brightgreen" alt="Coverage">
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/26-packages-6B7280" alt="Packages">
-  <img src="https://img.shields.io/badge/300+-tests-10B981" alt="Tests">
-  <img src="https://img.shields.io/badge/41-enterprise-rules-F59E0B" alt="Rules">
-  <img src="https://img.shields.io/badge/8-compliance%20packs-8B5CF6" alt="Packs">
-  <img src="https://img.shields.io/badge/TypeScript-5.7-blue" alt="TypeScript">
-  <img src="https://img.shields.io/badge/Node-≥20-green" alt="Node">
+  <img src="https://img.shields.io/badge/26-Packages-6B7280" alt="Packages">
+  <img src="https://img.shields.io/badge/300%2B-Tests-10B981" alt="Tests">
+  <img src="https://img.shields.io/badge/41-Enterprise%20Rules-F59E0B" alt="Rules">
+  <img src="https://img.shields.io/badge/8-Compliance%20Packs-8B5CF6" alt="Packs">
+  <img src="https://img.shields.io/badge/OpenAPI-3.1-6BA539" alt="OpenAPI">
+  <img src="https://img.shields.io/badge/Docker-Ready-2496ED" alt="Docker">
+  <img src="https://img.shields.io/badge/Multi--Provider%20AI-6366f1" alt="Multi-Provider">
+  <img src="https://img.shields.io/badge/SSE%20Streaming-10B981" alt="SSE">
+  <img src="https://img.shields.io/badge/TypeScript-5.7-3178C6" alt="TypeScript">
+  <img src="https://img.shields.io/badge/Node-%E2%89%A520-339933" alt="Node">
 </p>
 
 ---
