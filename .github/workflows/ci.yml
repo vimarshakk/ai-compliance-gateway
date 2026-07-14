@@ -25,9 +25,9 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - name: Typecheck
-        run: pnpm -r run typecheck
+        run: pnpm typecheck
       - name: Lint
-        run: pnpm -r run lint || true
+        run: pnpm lint || true
 
   test:
     name: Test
