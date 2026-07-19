@@ -1,0 +1,63 @@
+_schemaVersion: '3.8.1'
+title: ACG Overview Dashboard
+uid: acg-overview
+tags: [acg, ai-compliance]
+timezone: browser
+refresh: 30s
+panels:
+  - id: 1
+    title: Requests per Second
+    type: timeseries
+    gridPos: { h: 8, w: 12, x: 0, y: 0 }
+    targets:
+      - expr: rate(acg_requests_total[5m])
+        legendFormat: "{{method}} {{path}}"
+  - id: 2
+    title: PII Detections
+    type: timeseries
+    gridPos: { h: 8, w: 12, x: 12, y: 0 }
+    targets:
+      - expr: sum(rate(acg_pii_detected_total[5m])) by (entity_type)
+        legendFormat: "{{entity_type}}"
+  - id: 3
+    title: Policy Evaluations
+    type: timeseries
+    gridPos: { h: 8, w: 12, x: 0, y: 8 }
+    targets:
+      - expr: sum(rate(acg_policy_evaluations_total[5m])) by (action)
+        legendFormat: "{{action}}"
+  - id: 4
+    title: Model Latency (p95)
+    type: timeseries
+    gridPos: { h: 8, w: 12, x: 12, y: 8 }
+    targets:
+      - expr: histogram_quantile(0.95, rate(acg_model_latency_seconds_bucket[5m]))
+        legendFormat: "p95"
+  - id: 5
+    title: Cost per Request
+    type: stat
+    gridPos: { h: 8, w: 6, x: 0, y: 16 }
+    targets:
+      - expr: avg(acg_request_cost_usd)
+        legendFormat: "Avg Cost"
+  - id: 6
+    title: Blocked Requests
+    type: stat
+    gridPos: { h: 8, w: 6, x: 6, y: 16 }
+    targets:
+      - expr: sum(rate(acg_requests_blocked_total[5m]))
+        legendFormat: "Blocked/s"
+  - id: 7
+    title: Active Connections
+    type: stat
+    gridPos: { h: 8, w: 6, x: 12, y: 16 }
+    targets:
+      - expr: acg_active_connections
+        legendFormat: "Connections"
+  - id: 8
+    title: Uptime
+    type: stat
+    gridPos: { h: 8, w: 6, x: 18, y: 16 }
+    targets:
+      - expr: time() - acg_start_time_seconds
+        legendFormat: "Uptime"
