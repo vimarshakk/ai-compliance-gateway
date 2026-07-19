@@ -1,0 +1,35 @@
+{
+  "name": "@acg/database",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "prisma generate && tsc",
+    "generate": "prisma generate",
+    "migrate": "prisma migrate dev",
+    "migrate:prod": "prisma migrate deploy",
+    "seed": "prisma db seed",
+    "typecheck": "prisma generate && tsc --noEmit",
+    "clean": "rm -rf dist .prisma"
+  },
+  "dependencies": {
+    "@acg/shared": "workspace:*",
+    "@prisma/client": "^6.5.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.12.0",
+    "prisma": "^6.5.0",
+    "typescript": "^5.7.0"
+  },
+  "prisma": {
+    "schema": "./prisma/schema.prisma"
+  }
+}
