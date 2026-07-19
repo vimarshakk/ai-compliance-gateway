@@ -1,0 +1,42 @@
+analyzer:
+  log_level: INFO
+  supported_languages:
+    - en
+    - es
+    - de
+    - fr
+    - hi
+  default_score_threshold: 0.5
+  entities:
+    - CREDIT_CARD
+    - PHONE_NUMBER
+    - EMAIL_ADDRESS
+    - IP_ADDRESS
+    - IBAN
+    - MEDICAL_LICENSE
+    - US_SSN
+    - AADHAAR
+    - PAN
+    - PASSPORT
+  recognizers:
+    - name: aadhaar_recognizer
+      type: pattern
+      pattern: '\b\d{4}\s?\d{4}\s?\d{4}\b'
+      score: 0.85
+      context:
+        - aadhaar
+        - UID
+    - name: pan_recognizer
+      type: pattern
+      pattern: '\b[A-Z]{5}\d{4}[A-Z]\b'
+      score: 0.80
+      context:
+        - PAN
+        - tax
+    - name: upi_id_recognizer
+      type: pattern
+      pattern: '\b[\w.-]+@[\w]+\b'
+      score: 0.70
+      context:
+        - UPI
+        - payment
