@@ -1,0 +1,77 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: acg-admin
+  labels:
+    app: acg
+    component: admin
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: acg
+      component: admin
+  template:
+    metadata:
+      labels:
+        app: acg
+        component: admin
+    spec:
+      containers:
+        - name: admin
+          image: ghcr.io/acg-ai/acg-admin:latest
+          ports:
+            - containerPort: 3002
+              protocol: TCP
+          env:
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: acg-secrets
+                  key: database-url
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: acg-secrets
+                  key: jwt-secret
+            - name: NATS_URL
+              value: "nats://acg-nats:4222"
+            - name: REDIS_URL
+              value: "redis://acg-redis:6379"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 3002
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 3002
+            initialDelaySeconds: 5
+            periodSeconds: 5
+          resources:
+            limits:
+              cpu: 500m
+              memory: 512Mi
+            requests:
+              cpu: 250m
+              memory: 256Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: acg-admin
+  labels:
+    app: acg
+    component: admin
+spec:
+  type: ClusterIP
+  ports:
+    - port: 3002
+      targetPort: 3002
+      protocol: TCP
+      name: http
+  selector:
+    app: acg
+    component: admin
