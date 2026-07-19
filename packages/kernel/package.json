@@ -1,0 +1,41 @@
+{
+  "name": "@acg/kernel",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Platform Kernel — Plugin Runtime, Rule Engine, Registry, Asset Graph, Evidence Engine",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": { "types": "./dist/index.d.ts", "import": "./dist/index.js" },
+    "./plugin-runtime": { "types": "./dist/plugin-runtime.d.ts", "import": "./dist/plugin-runtime.js" },
+    "./rule-engine": { "types": "./dist/rule-engine.d.ts", "import": "./dist/rule-engine.js" },
+    "./registry": { "types": "./dist/registry.d.ts", "import": "./dist/registry.js" },
+    "./asset-graph": { "types": "./dist/asset-graph.d.ts", "import": "./dist/asset-graph.js" },
+    "./evidence-engine": { "types": "./dist/evidence-engine.d.ts", "import": "./dist/evidence-engine.js" },
+    "./bom-adapter": { "types": "./dist/bom-adapter.d.ts", "import": "./dist/bom-adapter.js" },
+    "./compliance-score": { "types": "./dist/compliance-score.d.ts", "import": "./dist/compliance-score.js" },
+    "./engine-types": { "types": "./dist/engine-types.d.ts", "import": "./dist/engine-types.js" },
+    "./pipeline-runner": { "types": "./dist/pipeline-runner.d.ts", "import": "./dist/pipeline-runner.js" },
+    "./engines": { "types": "./dist/engines/index.d.ts", "import": "./dist/engines/index.js" },
+    "./engines/ai-router": { "types": "./dist/engines/ai-router.d.ts", "import": "./dist/engines/ai-router.js" },
+    "./engines/risk-engine": { "types": "./dist/engines/risk-engine.d.ts", "import": "./dist/engines/risk-engine.js" },
+    "./engines/governance-engine": { "types": "./dist/engines/governance-engine.d.ts", "import": "./dist/engines/governance-engine.js" },
+    "./engines/compliance-engine": { "types": "./dist/engines/compliance-engine.d.ts", "import": "./dist/engines/compliance-engine.js" }
+  },
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "dev": "tsc --watch",
+    "clean": "rm -rf dist"
+  },
+  "devDependencies": {
+    "@types/node": "^22.12.0",
+    "typescript": "^5.7.0",
+    "vitest": "^3.0.0"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}
