@@ -1,0 +1,13 @@
+anonymizer:
+  log_level: INFO
+  default_operator: replace
+  operators:
+    replace:
+      new_value: "[REDACTED]"
+    mask:
+      chars_to_mask: 4
+      masking_char: "*"
+    hash:
+      hash_type: sha256
+    redact:
+      redact_value: "<REDACTED>"

@@ -1,0 +1,146 @@
+---
+title: "Cookbook: Custom OPA Policy"
+description: "Write custom OPA/Rego policies for your AI compliance rules"
+---
+
+## Overview
+
+ACG uses Open Policy Agent (OPA) for policy enforcement. This cookbook shows how to write, test, and deploy custom policies.
+
+## Basic Policy Structure
+
+```rego
+package acg.compliance
+
+default deny = false
+
+# Rule: Block PII in AI responses
+deny contains msg if {
+    input.response.body.contains("SSN")
+    msg := "SSN detected in response"
+}
+```
+
+## Common Patterns
+
+### Block Specific Models
+
+```rego
+deny contains msg if {
+    input.request.model == "gpt-3.5-turbo"
+    input.request.organization.tier == "enterprise"
+    msg := "Enterprise tier must use GPT-4 or higher"
+}
+```
+
+### Require Consent
+
+```rego
+deny contains msg if {
+    input.request.collects_pii == true
+    not input.request.consent_recorded
+    msg := "PII collection requires recorded consent"
+}
+```
+
+### Enforce Data Residency
+
+```rego
+deny contains msg if {
+    input.request.region == "in"
+    not startswith(input.request.model_provider_region, "ap-south")
+    msg := "India data must stay in ap-south region"
+}
+```
+
+### Rate Limit by Risk Level
+
+```rego
+allow if {
+    input.request.risk_level == "low"
+    input.request.requests_today < 10000
+}
+
+allow if {
+    input.request.risk_level == "medium"
+    input.request.requests_today < 1000
+}
+
+allow if {
+    input.request.risk_level == "high"
+    input.request.requests_today < 100
+}
+```
+
+## Testing Policies
+
+```bash
+# Test with OPA CLI
+acg scan --policy packs/my-policy/policy.rego
+
+# Test specific input
+echo '{"request":{"model":"gpt-3.5-turbo"}}' | \
+  opa eval -d packs/my-policy/policy.rego data.acg.compliance.deny
+```
+
+## Deploying Policies
+
+```bash
+# Via CLI
+acg packs --create my-policy --file packs/my-policy/policy.rego
+
+# Via API
+curl -X POST http://localhost:3002/v1/policies \
+  -H "Content-Type: application/json" \
+  -d '{
+    "organizationId": "my-org",
+    "name": "my-policy",
+    "type": "opa",
+    "rules": [{"file": "packs/my-policy/policy.rego"}]
+  }'
+```
+
+## Full Example: Healthcare Data Policy
+
+```rego
+package acg.compliance.healthcare
+
+default deny = false
+
+# Block PHI in logs
+deny contains msg if {
+    input.request.contains_phi
+    input.request.destination == "log"
+    msg := "PHI must not be written to logs"
+}
+
+# Require encryption for PHI
+deny contains msg if {
+    input.request.contains_phi
+    not input.request.encrypted_in_transit
+    msg := "PHI must be encrypted in transit"
+}
+
+# Enforce minimum necessary principle
+deny contains msg if {
+    input.request.access_level > input.request.minimum_necessary
+    msg := "Access exceeds minimum necessary level"
+}
+
+# Audit trail for all PHI access
+audit contains entry if {
+    input.request.contains_phi
+    entry := {
+        "action": "phi_access",
+        "user": input.request.user_id,
+        "timestamp": time.now_ns(),
+        "resource": input.request.resource_id,
+    }
+}
+```
+
+## Next Steps
+
+- [Policy Simulation](/cookbooks/policy-simulation) — Test before deploying
+- [Compliance Packs](/compliance/overview) — Pre-built pack reference
+- [Enterprise Policies](/cookbooks/enterprise-policies) — Multi-org policy management

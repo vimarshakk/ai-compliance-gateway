@@ -1,0 +1,263 @@
+---
+title: CLI Reference
+description: Complete reference for the ACG CLI
+---
+
+# CLI Reference
+
+The ACG command-line interface provides tools for scanning, scoring, and managing compliance.
+
+## Installation
+
+```bash
+npm install -g @acg/cli
+```
+
+## Global Options
+
+```bash
+acg [command] [options]
+
+Options:
+  --admin-url <url>     Admin API URL (default: http://localhost:3002)
+  --gateway-url <url>   Gateway URL (default: http://localhost:3000)
+  --api-key <key>       API key for authentication
+  --remote              Use remote API instead of local files
+  --output <format>     Output format: json, table, text (default: table)
+  --verbose             Enable verbose logging
+  --help                Show help
+  --version             Show version
+```
+
+## Commands
+
+### `acg scan`
+
+Scan a project for compliance issues.
+
+```bash
+acg scan [path] [options]
+
+Options:
+  --pack <name>         Compliance pack to use (default: dpdp)
+  --format <format>     Output format: json, table, text
+  --severity <level>    Minimum severity: low, medium, high, critical
+  --fix                 Auto-fix issues where possible
+
+Examples:
+  acg scan .
+  acg scan ./src --pack hipaa
+  acg scan . --severity high --output json
+```
+
+### `acg score`
+
+Check compliance score for a project.
+
+```bash
+acg score [path] [options]
+
+Options:
+  --pack <name>         Compliance pack to use
+  --history             Show score history
+  --compare             Compare with previous score
+
+Examples:
+  acg score .
+  acg score . --pack gdpr
+  acg score . --history
+```
+
+### `acg bom`
+
+Generate AI Bill of Materials.
+
+```bash
+acg bom [path] [options]
+
+Options:
+  --format <format>     Output format: json, table, text
+  --include-deps        Include dependency details
+  --output <file>       Write output to file
+
+Examples:
+  acg bom .
+  acg bom . --format json --output bom.json
+  acg bom . --include-deps
+```
+
+### `acg explain`
+
+Explain a compliance rule or violation.
+
+```bash
+acg explain [rule-id] [options]
+
+Examples:
+  acg explain hipaa_001
+  acg explain dpdp_consent --verbose
+```
+
+### `acg report`
+
+Generate a compliance report.
+
+```bash
+acg report [path] [options]
+
+Options:
+  --format <format>     Report format: pdf, html, json, markdown
+  --pack <name>         Compliance pack to use
+  --output <file>       Output file path
+
+Examples:
+  acg report . --format markdown --output report.md
+  acg report . --pack pci-dss --format pdf
+```
+
+### `acg packs`
+
+Manage compliance packs.
+
+```bash
+acg packs [subcommand] [options]
+
+Subcommands:
+  list                  List installed packs
+  install <name>        Install a pack
+  uninstall <name>      Uninstall a pack
+  search <query>        Search for packs
+
+Examples:
+  acg packs list
+  acg packs install hipaa
+  acg packs search "data protection"
+```
+
+### `acg plugins`
+
+Manage plugins.
+
+```bash
+acg plugins [subcommand] [options]
+
+Subcommands:
+  list                  List installed plugins
+  install <name>        Install a plugin
+  uninstall <name>      Uninstall a plugin
+  validate <path>       Validate a plugin manifest
+
+Examples:
+  acg plugins list
+  acg plugins install slack-notifier
+  acg plugins validate ./my-plugin
+```
+
+### `acg providers`
+
+List AI providers and their compliance features.
+
+```bash
+acg providers [options]
+
+Options:
+  --format <format>     Output format: json, table
+  --filter <feature>    Filter by compliance feature
+
+Examples:
+  acg providers
+  acg providers --filter hipaa
+  acg providers --format json
+```
+
+### `acg config`
+
+Manage ACG configuration.
+
+```bash
+acg config [subcommand] [options]
+
+Subcommands:
+  show                  Show current configuration
+  set <key> <value>     Set a configuration value
+  get <key>             Get a configuration value
+  init                  Initialize configuration file
+
+Examples:
+  acg config show
+  acg config set admin-url http://localhost:3002
+  acg config get api-key
+  acg config init
+```
+
+### `acg doctor`
+
+Check system health and configuration.
+
+```bash
+acg doctor [options]
+
+Options:
+  --verbose             Show detailed health information
+  --fix                 Attempt to fix issues automatically
+
+Examples:
+  acg doctor
+  acg doctor --verbose
+  acg doctor --fix
+```
+
+### `acg init`
+
+Initialize a new ACG project.
+
+```bash
+acg init [options]
+
+Options:
+  --template <name>     Project template (default, healthcare, fintech)
+  --pack <name>         Default compliance pack
+
+Examples:
+  acg init
+  acg init --template healthcare --pack hipaa
+```
+
+## Shell Completions
+
+Enable tab completion for your shell:
+
+```bash
+# Bash
+acg completion bash >> ~/.bashrc
+
+# Zsh
+acg completion zsh >> ~/.zshrc
+
+# Fish
+acg completion fish > ~/.config/fish/completions/acg.fish
+```
+
+## Configuration File
+
+ACG stores configuration in `~/.acg/config.json`:
+
+```json
+{
+  "admin-url": "http://localhost:3002",
+  "gateway-url": "http://localhost:3000",
+  "api-key": "your-api-key",
+  "default-pack": "dpdp",
+  "output-format": "table"
+}
+```
+
+## Environment Variables
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `ACG_ADMIN_URL` | Admin API URL | `http://localhost:3002` |
+| `ACG_GATEWAY_URL` | Gateway URL | `http://localhost:3000` |
+| `ACG_API_KEY` | API key | — |
+| `ACG_DEFAULT_PACK` | Default compliance pack | `dpdp` |
+| `ACG_OUTPUT_FORMAT` | Output format | `table` |

@@ -1,0 +1,98 @@
+---
+title: "Chat Completions"
+description: "OpenAI-compatible chat completion endpoint"
+---
+
+## POST /v1/chat/completions
+
+Create a chat completion. Compatible with the OpenAI API format.
+
+### Request Body
+
+```json
+{
+  "model": "gpt-4",
+  "messages": [
+    {"role": "system", "content": "You are a helpful assistant."},
+    {"role": "user", "content": "Hello!"}
+  ],
+  "temperature": 0.7,
+  "max_tokens": 1000,
+  "stream": false
+}
+```
+
+### Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `model` | string | Yes | Model identifier (gpt-4, claude-3-opus, etc.) |
+| `messages` | array | Yes | Array of message objects |
+| `temperature` | number | No | Sampling temperature (0-2) |
+| `max_tokens` | integer | No | Maximum tokens to generate |
+| `stream` | boolean | No | Enable streaming responses |
+| `metadata` | object | No | Custom metadata for audit trail |
+
+### Response
+
+```json
+{
+  "id": "chatcmpl-abc123",
+  "object": "chat.completion",
+  "created": 1640995200,
+  "model": "gpt-4",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "Hello! How can I help you today?"
+      },
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 20,
+    "completion_tokens": 10,
+    "total_tokens": 30
+  },
+  "acg": {
+    "requestId": "req_abc123",
+    "policy": "allow",
+    "piiDetected": false,
+    "cost": 0.00045
+  }
+}
+```
+
+### Streaming
+
+When `stream: true`, the response is an SSE stream:
+
+```
+data: {"id":"chatcmpl-abc","choices":[{"delta":{"content":"Hello"},"index":0}]}
+data: {"id":"chatcmpl-abc","choices":[{"delta":{"content":"!"},"index":0}]}
+data: [DONE]
+```
+
+### ACG Metadata
+
+Every response includes an `acg` object with compliance data:
+
+| Field | Description |
+|-------|-------------|
+| `requestId` | Unique request identifier |
+| `policy` | Policy decision (allow/deny) |
+| `piiDetected` | Whether PII was detected |
+| `cost` | Estimated cost in USD |
+
+### Errors
+
+| Status | Code | Description |
+|--------|------|-------------|
+| 400 | `INVALID_REQUEST` | Malformed request body |
+| 401 | `UNAUTHORIZED` | Invalid or missing API key |
+| 403 | `FORBIDDEN` | Insufficient permissions |
+| 429 | `RATE_LIMIT_EXCEEDED` | Too many requests |
+| 500 | `INTERNAL_ERROR` | Server error |
+| 503 | `MODEL_UNAVAILABLE` | Requested model is down |

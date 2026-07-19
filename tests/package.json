@@ -1,0 +1,23 @@
+{
+  "name": "@acg/tests",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:integration": "vitest run tests/integration",
+    "test:e2e": "vitest run tests/e2e",
+    "test:performance": "vitest run tests/performance",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@acg/shared": "workspace:*",
+    "@acg/connectors": "workspace:*",
+    "@acg/workflows": "workspace:*",
+    "@acg/gateway": "workspace:*",
+    "vitest": "^3.0.0",
+    "typescript": "^5.7.0",
+    "@types/node": "^22.12.0"
+  }
+}

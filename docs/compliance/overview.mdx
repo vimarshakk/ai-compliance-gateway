@@ -1,0 +1,91 @@
+---
+title: "Compliance Packs Overview"
+description: "Pre-built rule sets for regulatory frameworks"
+---
+
+## What are Compliance Packs?
+
+Compliance Packs are pre-configured rule sets that map to specific regulatory frameworks. Each pack contains:
+
+- **Rules** that check for compliance requirements
+- **Controls** that must be implemented
+- **Severity levels** based on regulatory impact
+- **Remediation guidance** for violations
+
+## Available Packs
+
+| Pack | Region | Industry | Rules | Status |
+|------|--------|----------|-------|--------|
+| [DPDP](/compliance/dpdp) | India | All | 18 | ✅ Ready |
+| [HIPAA](/compliance/hipaa) | US | Healthcare | 24 | ✅ Ready |
+| [GDPR](/compliance/gdpr) | EU | All | 28 | ✅ Ready |
+| [PCI-DSS](/compliance/pci-dss) | Global | Financial | 32 | ✅ Ready |
+| [SOC 2](/compliance/soc2) | Global | Technology | 42 | ✅ Ready |
+| [ABDM](/compliance/abdm) | India | Healthcare | 16 | ✅ Ready |
+| [AI Safety](/compliance/ai-safety) | Global | All | 20 | ✅ Ready |
+| [Banking](/compliance/banking) | India | Financial | 22 | ✅ Ready |
+
+## Using a Pack
+
+### Via CLI
+
+```bash
+# Scan with a specific pack
+acg score --pack dpdp
+
+# Scan with multiple packs
+acg score --pack dpdp --pack hipaa
+```
+
+### Via API
+
+```json
+POST /v1/compliance/scores
+{
+  "organizationId": "org_xxx",
+  "pack": "dpdp",
+  "scanResult": { ... },
+  "bomResult": { ... }
+}
+```
+
+## Creating Custom Packs
+
+Custom packs follow the same structure:
+
+```json
+{
+  "id": "my-pack",
+  "name": "My Custom Pack",
+  "description": "Internal compliance requirements",
+  "region": "global",
+  "industry": "Internal",
+  "rules": [
+    {
+      "id": "no-secrets",
+      "name": "No Secrets in Code",
+      "severity": "critical",
+      "check": "scan.secretsFound === 0"
+    }
+  ],
+  "requiredControls": [
+    "secret-management",
+    "access-control"
+  ]
+}
+```
+
+## Compliance Score
+
+Each scan produces a score from 0-100:
+
+| Category | Points | What it checks |
+|----------|--------|----------------|
+| Secret Management | 25 | No hardcoded secrets |
+| SDK Coverage | 20 | AI SDKs detected |
+| Environment Hygiene | 15 | No exposed env vars |
+| Guardrail Coverage | 20 | Policy enforcement tools |
+| Observability | 10 | Monitoring tools |
+| Prompt Hygiene | 10 | Untracked prompt files |
+
+**80%+ is considered compliant.**

@@ -1,0 +1,207 @@
+---
+title: Troubleshooting
+description: Common issues and solutions
+---
+
+# Troubleshooting
+
+## Common Issues
+
+### Gateway won't start
+
+**Symptom:** `acg doctor` shows gateway as unhealthy.
+
+**Causes:**
+1. Port 3000 already in use
+2. Database connection failed
+3. OPA unreachable
+
+**Solutions:**
+
+```bash
+# Check if port is in use
+lsof -i :3000
+
+# Kill existing process
+kill -9 $(lsof -t -i:3000)
+
+# Check database connection
+acg doctor --verbose
+
+# Start with debug logging
+DEBUG=* acg gateway
+```
+
+### API key authentication failing
+
+**Symptom:** Requests return 401 Unauthorized.
+
+**Causes:**
+1. API key not provided
+2. API key expired
+3. API key not activated
+
+**Solutions:**
+
+```bash
+# Verify API key is set
+acg config get api-key
+
+# Test with curl
+curl -H "X-Api-Key: your-key" http://localhost:3000/health
+
+# Check key status in admin
+acg providers --format json
+```
+
+### Policy engine (OPA) unreachable
+
+**Symptom:** All requests return 503 Service Unavailable.
+
+**Causes:**
+1. OPA container not running
+2. OPA port misconfigured
+3. Network issue
+
+**Solutions:**
+
+```bash
+# Check OPA status
+docker compose ps opa
+
+# Check OPA logs
+docker compose logs opa
+
+# Test OPA directly
+curl http://localhost:8181/health
+
+# Restart OPA
+docker compose restart opa
+```
+
+### Database connection errors
+
+**Symptom:** `acg scan` fails with database errors.
+
+**Causes:**
+1. PostgreSQL not running
+2. Wrong credentials
+3. Database doesn't exist
+
+**Solutions:**
+
+```bash
+# Check PostgreSQL status
+docker compose ps postgres
+
+# Test connection
+psql -h localhost -U acg -d acg
+
+# Reset database
+pnpm --filter @acg/database db:reset
+
+# Run migrations
+pnpm --filter @acg/database db:migrate
+```
+
+### Compliance score not updating
+
+**Symptom:** Score remains at 0 after running scans.
+
+**Causes:**
+1. Admin API not running
+2. Score engine not initialized
+3. No policies configured
+
+**Solutions:**
+
+```bash
+# Check admin API status
+curl http://localhost:3002/health
+
+# Check score history
+acg score . --history
+
+# Verify policies are loaded
+acg packs list
+```
+
+### Dashboard not loading
+
+**Symptom:** Dashboard shows blank page or errors.
+
+**Causes:**
+1. Dashboard not running
+2. API URL misconfigured
+3. Authentication issue
+
+**Solutions:**
+
+```bash
+# Check dashboard status
+docker compose ps dashboard
+
+# Check dashboard logs
+docker compose logs dashboard
+
+# Verify API URL
+acg config get admin-url
+
+# Clear browser cache
+# Open DevTools → Application → Clear Storage
+```
+
+## Debug Mode
+
+Enable debug logging for any command:
+
+```bash
+DEBUG=* acg scan .
+DEBUG=acg:* acg score .
+```
+
+## Getting Help
+
+If you can't resolve an issue:
+
+1. Check [GitHub Issues](https://github.com/acg-ai/acg/issues) for similar problems
+2. Search [GitHub Discussions](https://github.com/acg-ai/acg/discussions)
+3. Open a new issue with:
+   - ACG version (`acg --version`)
+   - Operating system
+   - Full error message
+   - Steps to reproduce
+
+## Health Checks
+
+```bash
+# Check all services
+acg doctor
+
+# Check specific service
+acg doctor --verbose
+
+# Check gateway health
+curl http://localhost:3000/health
+
+# Check admin health
+curl http://localhost:3002/health
+
+# Check database
+psql -h localhost -U acg -d acg -c "SELECT 1"
+```
+
+## Logs
+
+```bash
+# View all logs
+docker compose logs -f
+
+# View specific service
+docker compose logs -f gateway
+docker compose logs -f admin
+docker compose logs -f dashboard
+
+# View last 100 lines
+docker compose logs --tail 100 gateway
+```

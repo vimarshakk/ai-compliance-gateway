@@ -1,0 +1,85 @@
+---
+title: "Architecture Overview"
+description: "High-level system architecture"
+---
+
+## System Architecture
+
+```
+┌─────────────────────────────────────────────────────────┐
+│                    Client Applications                   │
+│  (Web App, Mobile, CLI, CI/CD, VS Code Extension)       │
+└──────────────────────────┬──────────────────────────────┘
+                           │
+                           ▼
+┌─────────────────────────────────────────────────────────┐
+│                   API Gateway (Kong)                     │
+│            Rate Limiting, SSL Termination                │
+└──────────────────────────┬──────────────────────────────┘
+                           │
+                           ▼
+┌─────────────────────────────────────────────────────────┐
+│                 ACG Gateway (Fastify)                    │
+│                                                         │
+│  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐  │
+│  │ Auth     │ │ PII      │ │ Policy   │ │ Guard-   │  │
+│  │ (API Key)│ │ (Presidio│ │ (OPA)    │ │ rails    │  │
+│  │          │ │          │ │          │ │ (NeMo)   │  │
+│  └──────────┘ └──────────┘ └──────────┘ └──────────┘  │
+│                                                         │
+│  ┌──────────────────────────────────────────────────┐  │
+│  │              Platform Kernel                      │  │
+│  │  Plugin Runtime │ Rule Engine │ Registry          │  │
+│  │  Asset Graph    │ Evidence Engine                 │  │
+│  └──────────────────────────────────────────────────┘  │
+└──────────────────────────┬──────────────────────────────┘
+                           │
+                           ▼
+┌─────────────────────────────────────────────────────────┐
+│                   LLM Providers                         │
+│  (OpenAI, Anthropic, Google, Cohere, etc.)              │
+│              via LiteLLM Proxy                          │
+└─────────────────────────────────────────────────────────┘
+```
+
+## Data Layer
+
+```
+┌──────────────┐  ┌──────────────┐  ┌──────────────┐
+│  PostgreSQL  │  │    Redis     │  │     NATS     │
+│  (Primary)   │  │   (Cache)    │  │  (Events)    │
+│              │  │              │  │              │
+│  • Orgs      │  │  • API Keys  │  │  • Requests  │
+│  • Projects  │  │  • Sessions  │  │  • Audit     │
+│  • Policies  │  │  • Rate      │  │  • Usage     │
+│  • Audit     │  │    Limits    │  │  • Webhooks  │
+│  • Usage     │  │              │  │              │
+└──────────────┘  └──────────────┘  └──────────────┘
+```
+
+## Observability Stack
+
+```
+┌──────────────┐  ┌──────────────┐  ┌──────────────┐
+│  Prometheus  │  │   Grafana    │  │   Langfuse   │
+│  (Metrics)   │  │  (Dashboards)│  │  (Traces)    │
+└──────────────┘  └──────────────┘  └──────────────┘
+```
+
+## Security Architecture
+
+- **Encryption at rest**: AES-256 for sensitive data
+- **Encryption in transit**: TLS 1.3 for all connections
+- **Authentication**: API keys with hash-based storage
+- **Authorization**: Role-based access control (RBAC)
+- **Audit**: Immutable audit log with hash chain verification
+- **PII**: Auto-detection and redaction via Presidio
+
+## Deployment Options
+
+| Option | Best For | Complexity |
+|--------|----------|-----------|
+| ACG Cloud | Startups, small teams | Low |
+| Self-hosted Docker | Medium teams | Medium |
+| Kubernetes | Enterprise, regulated | High |
+| Air-gapped | Government, defense | Very High |

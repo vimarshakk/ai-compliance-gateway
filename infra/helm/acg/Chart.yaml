@@ -1,0 +1,23 @@
+apiVersion: v2
+name: acg
+description: A Helm chart for AI Compliance Gateway
+type: application
+version: 0.1.0
+appVersion: "2.6.0"
+keywords:
+  - ai
+  - compliance
+  - governance
+  - opa
+  - guardrails
+  - policy
+  - security
+  - audit
+home: https://github.com/vimarshakk/ai-compliance-gateway
+sources:
+  - https://github.com/acg-ai/acg
+maintainers:
+  - name: ACG Team
+    email: pvimarshak@gmail.com
+icon: https://github.com/vimarshakk/ai-compliance-gateway/logo.png
+license: Apache-2.0

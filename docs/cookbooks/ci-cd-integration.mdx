@@ -1,0 +1,119 @@
+---
+title: "Cookbook: CI/CD Integration"
+description: "Run compliance scans in GitHub Actions, GitLab CI, or Jenkins"
+---
+
+## Overview
+
+Integrate ACG compliance scanning into your CI/CD pipeline to catch issues before they reach production.
+
+## GitHub Actions
+
+```yaml
+# .github/workflows/acg-scan.yml
+name: AI Compliance Scan
+on: [push, pull_request]
+
+jobs:
+  compliance:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install ACG CLI
+        run: npm install -g @acg/cli
+
+      - name: Run compliance scan
+        env:
+          ACG_API_KEY: ${{ secrets.ACG_API_KEY }}
+        run: |
+          acg scan --output scan-results.json
+          acg score --output score-results.json
+
+      - name: Check score threshold
+        run: |
+          SCORE=$(jq '.score' score-results.json)
+          if [ "$SCORE" -lt 70 ]; then
+            echo "❌ Compliance score $SCORE is below threshold (70)"
+            exit 1
+          fi
+          echo "✅ Compliance score: $SCORE/100"
+
+      - name: Upload results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: acg-results
+          path: |
+            scan-results.json
+            score-results.json
+```
+
+## GitLab CI
+
+```yaml
+# .gitlab-ci.yml
+compliance-scan:
+  stage: test
+  image: node:22
+  script:
+    - npm install -g @acg/cli
+    - acg scan --output scan-results.json
+    - acg score --output score-results.json
+    - |
+      SCORE=$(jq '.score' score-results.json)
+      if [ "$SCORE" -lt 70 ]; then
+        echo "Compliance score $SCORE below threshold"
+        exit 1
+      fi
+  artifacts:
+    paths:
+      - scan-results.json
+      - score-results.json
+```
+
+## Jenkins
+
+```groovy
+// Jenkinsfile
+pipeline {
+    agent any
+    stages {
+        stage('Compliance Scan') {
+            steps {
+                sh 'npm install -g @acg/cli'
+                sh 'acg scan --output scan-results.json'
+                sh 'acg score --output score-results.json'
+            }
+            post {
+                always {
+                    archiveArtifacts artifacts: '*-results.json'
+                }
+            }
+        }
+    }
+}
+```
+
+## Self-Hosted ACG
+
+If you have ACG self-hosted, point the CLI to your instance:
+
+```bash
+acg scan --admin-url https://acg.yourdomain.com
+```
+
+## Branch Protection
+
+Configure GitHub branch protection to require compliance scan:
+
+1. Go to Settings → Branches → Branch protection rules
+2. Enable "Require status checks"
+3. Add `compliance` as a required check
+4. Set minimum score threshold in ACG config
+
+## Next Steps
+
+- [Custom Policies](/cookbooks/custom-policy) — Write your own rules
+- [VS Code Extension](/sdks/vsc-extension) — Real-time scanning in your editor
+- [Production Checklist](/guides/production-checklist) — Go-live checklist

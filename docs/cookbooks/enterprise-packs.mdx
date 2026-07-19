@@ -1,0 +1,139 @@
+---
+title: "Cookbook: Enterprise Compliance Packs"
+description: "Build and distribute compliance packs for regulated industries"
+---
+
+## Overview
+
+Enterprise compliance packs are pre-built rule sets for specific regulations. This cookbook shows how to create, test, and distribute packs for healthcare, finance, and government use cases.
+
+## Pack Structure
+
+```
+packs/
+├── healthcare/
+│   ├── pack.json          # Metadata
+│   ├── policy.rego        # OPA rules
+│   ├── tests/
+│   │   ├── test-phi.rego  # Unit tests
+│   │   └── test-audit.rego
+│   └── README.md
+├── finance/
+│   ├── pack.json
+│   ├── policy.rego
+│   └── tests/
+└── government/
+    ├── pack.json
+    ├── policy.rego
+    └── tests/
+```
+
+## Pack Metadata
+
+```json
+{
+  "id": "healthcare-hipaa",
+  "name": "HIPAA Compliance",
+  "version": "1.0.0",
+  "description": "Health Insurance Portability and Accountability Act rules",
+  "regulation": "HIPAA",
+  "region": "US",
+  "categories": ["healthcare", "pii", "phi"],
+  "rules": [
+    "block_phi_in_logs",
+    "require_encryption",
+    "enforce_minimum_necessary",
+    "audit_trail"
+  ],
+  "author": "ACG Team",
+  "license": "MIT"
+}
+```
+
+## Example: HIPAA Pack
+
+```rego
+package acg.compliance.hipaa
+
+default deny = false
+
+# Block PHI in logs
+deny contains msg if {
+    input.request.contains_phi
+    input.request.destination == "log"
+    msg := "HIPAA: PHI must not be written to logs"
+}
+
+# Require encryption for PHI
+deny contains msg if {
+    input.request.contains_phi
+    not input.request.encrypted_in_transit
+    msg := "HIPAA: PHI must be encrypted in transit"
+}
+
+# Enforce access controls
+deny contains msg if {
+    input.request.access_level > input.request.user_clearance
+    msg := "HIPAA: Access exceeds user clearance level"
+}
+
+# Audit trail for PHI access
+audit contains entry if {
+    input.request.contains_phi
+    entry := {
+        "action": "phi_access",
+        "user": input.request.user_id,
+        "resource": input.request.resource_id,
+        "timestamp": time.now_ns(),
+    }
+}
+```
+
+## Testing Packs
+
+```bash
+# Run pack tests
+acg scan --policy packs/healthcare/policy.rego --test
+
+# Simulate against pack
+acg simulate \
+  --model gpt-4 \
+  --message "Patient has HIV" \
+  --pack healthcare-hipaa
+
+# Expected: deny with "PHI detected"
+```
+
+## Distributing Packs
+
+```bash
+# Publish to ACG Marketplace
+acg packs --publish packs/healthcare/
+
+# Install from Marketplace
+acg packs --install healthcare-hipaa@1.0.0
+```
+
+## Pack Categories
+
+| Category | Examples | Typical Rules |
+|----------|----------|---------------|
+| Healthcare | HIPAA, ABDM | PHI protection, consent, audit |
+| Finance | PCI-DSS, SOX | Card data, financial records |
+| Government | DPDP, GDPR | Data residency, consent, right to deletion |
+| AI Safety | EU AI Act | Bias detection, transparency, human oversight |
+| Industry | SOC2, ISO27001 | Security controls, access management |
+
+## Best Practices
+
+1. **Test thoroughly** — Every rule needs unit tests
+2. **Version carefully** — Semantic versioning for packs
+3. **Document rules** — Each rule needs a description and remediation
+4. **Provide examples** — Sample inputs that trigger each rule
+5. **Support overrides** — Allow orgs to disable specific rules
+
+## Next Steps
+
+- [Custom Policies](/cookbooks/custom-policy) — Write your own rules
+- [Compliance Packs](/compliance/overview) — Pre-built pack reference
+- [Community Plugins](/cookbooks/community-plugins) — Share your packs
