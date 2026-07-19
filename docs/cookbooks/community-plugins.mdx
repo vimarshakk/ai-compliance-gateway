@@ -1,0 +1,163 @@
+---
+title: "Cookbook: Community Plugins"
+description: "Build, share, and install community-contributed compliance plugins"
+---
+
+## Overview
+
+ACG's plugin system lets you extend the platform with custom engines, rules, and integrations. This cookbook covers building and distributing community plugins.
+
+## Plugin Types
+
+| Type | Description | Example |
+|------|-------------|---------|
+| **Engine** | Custom processing engine | Bias detection, content filter |
+| **Rule Pack** | OPA policy collection | Industry-specific compliance |
+| **Connector** | External service integration | Slack alerts, PagerDuty |
+| **Dashboard** | Custom dashboard widget | Cost breakdown, risk heatmap |
+
+## Creating a Plugin
+
+### 1. Scaffold
+
+```bash
+# Create plugin from template
+acg plugins create my-plugin --type engine
+
+# This creates:
+# my-plugin/
+# ├── package.json
+# ├── src/index.ts        # Plugin entry point
+# ├── src/engine.ts       # Engine implementation
+# ├── tests/
+# └── README.md
+```
+
+### 2. Implement the Engine
+
+```typescript
+// src/engine.ts
+import type { Engine, EngineInput, EngineOutput } from '@acg/kernel';
+
+export class BiasDetectionEngine implements Engine {
+  metadata = {
+    id: 'bias-detection',
+    name: 'Bias Detection Engine',
+    version: '1.0.0',
+    description: 'Detects potential bias in AI responses',
+    stages: ['post-response'] as const,
+  };
+
+  async execute(input: EngineInput): Promise<EngineOutput> {
+    const response = input.response?.body ?? '';
+    const biases = this.detectBias(response);
+
+    return {
+      engine: this.metadata.id,
+      output: {
+        biases,
+        score: biases.length === 0 ? 100 : Math.max(0, 100 - biases.length * 20),
+      },
+      violations: biases.map(b => ({
+        rule: `bias-${b.type}`,
+        severity: 'medium' as const,
+        message: b.description,
+      })),
+      durationMs: 0,
+    };
+  }
+
+  private detectBias(text: string) {
+    const biases = [];
+    // Add your bias detection logic here
+    return biases;
+  }
+}
+```
+
+### 3. Register the Plugin
+
+```typescript
+// src/index.ts
+import { BiasDetectionEngine } from './engine';
+
+export function register() {
+  return {
+    engines: [new BiasDetectionEngine()],
+  };
+}
+```
+
+### 4. Test
+
+```bash
+# Run plugin tests
+acg plugins test my-plugin
+
+# Simulate with plugin
+acg simulate \
+  --model gpt-4 \
+  --message "Test message" \
+  --plugin my-plugin
+```
+
+### 5. Publish
+
+```bash
+# Publish to npm
+npm publish
+
+# Register with ACG
+acg plugins --publish my-plugin
+```
+
+## Installing Plugins
+
+```bash
+# From npm
+acg plugins --install bias-detection
+
+# From GitHub
+acg plugins --install github:user/repo
+
+# List installed
+acg plugins --list
+```
+
+## Plugin Configuration
+
+```json
+// acg.config.json
+{
+  "plugins": {
+    "bias-detection": {
+      "enabled": true,
+      "config": {
+        "sensitivity": "high",
+        "categories": ["gender", "race", "age"]
+      }
+    },
+    "custom-connector": {
+      "enabled": true,
+      "config": {
+        "webhookUrl": "https://hooks.slack.com/...",
+        "events": ["violation", "high-risk"]
+      }
+    }
+  }
+}
+```
+
+## Best Practices
+
+1. **Single responsibility** — One plugin, one purpose
+2. **Test coverage** — 100% test coverage for rule packs
+3. **Documentation** — README with examples
+4. **Versioning** — Semantic versioning
+5. **Security** — No secrets in plugin code
+
+## Next Steps
+
+- [Custom Policies](/cookbooks/custom-policy) — Write OPA rules
+- [Enterprise Packs](/cookbooks/enterprise-packs) — Industry-specific packs
+- [Marketplace](/marketplace) — Browse community plugins

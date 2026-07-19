@@ -1,0 +1,79 @@
+---
+title: "Introduction"
+description: "AI Compliance Gateway — Cloudflare for Enterprise AI"
+---
+
+## What is the AI Compliance Gateway?
+
+The **AI Compliance Gateway** (ACG) is a single API endpoint that sits between your application and all LLM providers. It adds **compliance**, **risk management**, **governance**, and **observability** to every AI request — without changing your code.
+
+Think of it as **Cloudflare for AI**: a reverse proxy that intercepts, inspects, and enriches every LLM call.
+
+<Frame>
+  ```mermaid
+  graph LR
+    A[Your App] -->|API Call| B[ACG Gateway]
+    B -->|Inspects| C[Policy Engine]
+    B -->|Redacts PII| D[Presidio]
+    B -->|Blocks Jailbreaks| E[NeMo Guardrails]
+    B -->|Routes| F[OpenAI / Anthropic / etc]
+    F -->|Response| B
+    B -->|Filters Output| B
+    B -->|Logs| G[Langfuse / OTel]
+    B -->|Audit Trail| H[PostgreSQL]
+  ```
+</Frame>
+
+## Why ACG?
+
+| Problem | ACG Solution |
+|---------|-------------|
+| Each AI provider has different APIs | Single OpenAI-compatible endpoint |
+| No visibility into AI usage | Real-time dashboard + audit logs |
+| PII leaks to third-party AI | Presidio-based PII redaction |
+| No compliance evidence | Tamper-proof evidence chain |
+| Vendor lock-in | Provider-agnostic routing |
+| Cost spiraling out of control | Token-level budget enforcement |
+| No governance | Policy-as-code with OPA |
+
+## Key Features
+
+### 🛡️ Compliance Engine
+Run compliance checks against **8 built-in packs** (DPDP, HIPAA, GDPR, PCI-DSS, SOC2, ABDM, AI Safety, Banking) or create custom rules with the **Rule SDK**.
+
+### 🔒 Security Pipeline
+Every request flows through: **Rate Limit → API Key Auth → PII Detection → Policy Check → Jailbreak Prevention → LLM → Output Filter → Audit Log**.
+
+### 📊 Observability
+Real-time dashboards for token usage, cost tracking, latency monitoring, and compliance scores across all AI providers.
+
+### 🏢 Multi-Tenant
+Organization → Project → API Key hierarchy. Team management with role-based access control.
+
+### 💳 Billing
+Usage-based billing with Stripe/Razorpay integration. Track cost per request, per model, per organization.
+
+## Quick Start
+
+```bash
+# 1. Install CLI
+npm install -g @acg/cli
+
+# 2. Initialize project
+acg init
+
+# 3. Scan your codebase
+acg scan
+
+# 4. Get compliance score
+acg score --pack dpdp
+```
+
+<CardGroup cols={2}>
+  <Card title="Quickstart" icon="rocket" href="/getting-started/quickstart">
+    Get running in 5 minutes
+  </Card>
+  <Card title="API Reference" icon="code" href="/api/overview">
+    Full API documentation
+  </Card>
+</CardGroup>

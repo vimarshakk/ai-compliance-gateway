@@ -1,0 +1,123 @@
+---
+title: "Platform Kernel"
+description: "The execution core of ACG"
+---
+
+## What is the Kernel?
+
+The **Platform Kernel** (`@acg/kernel`) is the execution core that every product surface consumes. It provides:
+
+1. **Plugin Runtime** — Dynamic plugin loading with lifecycle hooks
+2. **Rule Engine** — ESLint-style rule evaluation
+3. **Registry** — Centralized component registry
+4. **Asset Graph** — Dependency tracking between AI assets
+5. **Evidence Engine** — Tamper-proof audit trail
+
+## Architecture
+
+```
+┌─────────────────────────────────────────────┐
+│              Platform Kernel                 │
+│                                             │
+│  ┌─────────────┐    ┌─────────────────────┐│
+│  │   Plugin     │    │    Rule Engine      ││
+│  │   Runtime    │───▶│                     ││
+│  │              │    │  register(rules)    ││
+│  │  register()  │    │  evaluate(input)    ││
+│  │  activate()  │    │  createRule()       ││
+│  │  deactivate()│    │                     ││
+│  └─────────────┘    └─────────────────────┘│
+│         │                                   │
+│         ▼                                   │
+│  ┌─────────────┐    ┌─────────────────────┐│
+│  │   Registry   │    │   Asset Graph       ││
+│  │              │───▶│                     ││
+│  │  register()  │    │  addAsset()         ││
+│  │  query()     │    │  addEdge()          ││
+│  │  export()    │    │  findPath()         ││
+│  └─────────────┘    └─────────────────────┘│
+│         │                                   │
+│         ▼                                   │
+│  ┌─────────────────────────────────────┐   │
+│  │        Evidence Engine              │   │
+│  │                                     │   │
+│  │  create()      query()             │   │
+│  │  getChain()    registerGenerator() │   │
+│  │  (SHA-256 hash chain)              │   │
+│  └─────────────────────────────────────┘   │
+└─────────────────────────────────────────────┘
+```
+
+## Usage
+
+```typescript
+import {
+  PluginRuntime,
+  RuleEngine,
+  Registry,
+  AssetGraphEngine,
+  EvidenceEngine,
+} from '@acg/kernel';
+
+// Initialize
+const runtime = new PluginRuntime();
+const ruleEngine = new RuleEngine();
+const registry = new Registry();
+const assetGraph = new AssetGraphEngine();
+const evidence = new EvidenceEngine();
+
+// Register rules
+ruleEngine.register({
+  id: 'no-secrets',
+  name: 'No Secrets',
+  description: 'Detect API keys in code',
+  severity: 'critical',
+  category: 'security',
+}, (input) => {
+  if (/sk-[a-zA-Z0-9]{20,}/.test(input.code)) {
+    return { status: 'fail', message: 'API key detected' };
+  }
+  return { status: 'pass' };
+});
+
+// Evaluate
+const result = ruleEngine.evaluate({
+  code: 'const key = "sk-abc123...";',
+  filePath: 'src/config.ts',
+});
+```
+
+## Plugin System
+
+Plugins are the primary extension mechanism:
+
+```typescript
+const plugin = {
+  metadata: {
+    id: 'my-plugin',
+    name: 'My Plugin',
+    version: '1.0.0',
+    scope: 'global',
+  },
+  activate: async (ctx) => {
+    // Register rules, providers, etc.
+  },
+  deactivate: async () => {
+    // Cleanup
+  },
+};
+
+runtime.register(plugin);
+```
+
+## Evidence Chain
+
+Every compliance action creates an evidence record with a SHA-256 hash chain:
+
+```
+Record 1: { hash: "abc...", previousHash: "000..." }
+Record 2: { hash: "def...", previousHash: "abc..." }
+Record 3: { hash: "ghi...", previousHash: "def..." }
+```
+
+Tampering with any record breaks the chain.

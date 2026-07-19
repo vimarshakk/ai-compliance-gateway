@@ -1,0 +1,103 @@
+---
+title: "Python SDK"
+description: "Official Python SDK for AI Compliance Gateway"
+---
+
+## Installation
+
+```bash
+pip install acg-sdk
+```
+
+## Quick Start
+
+```python
+from acg import ACG
+
+client = ACG(api_key="acg_your_key_here")
+
+# Chat completion (OpenAI-compatible)
+response = client.chat.completions.create(
+    model="gpt-4",
+    messages=[{"role": "user", "content": "Hello!"}]
+)
+
+print(response.choices[0].message.content)
+print(response.acg)  # Compliance metadata
+```
+
+## Configuration
+
+```python
+from acg import ACG
+
+client = ACG(
+    api_key="acg_your_key_here",
+    base_url="https://api.acg.ai",
+    timeout=30,
+    max_retries=3,
+)
+```
+
+## Streaming
+
+```python
+stream = client.chat.completions.create(
+    model="gpt-4",
+    messages=[{"role": "user", "content": "Tell me a story"}],
+    stream=True,
+)
+
+for chunk in stream:
+    if chunk.choices[0].delta.content:
+        print(chunk.choices[0].delta.content, end="")
+```
+
+## Compliance Metadata
+
+```python
+response = client.chat.completions.create(
+    model="gpt-4",
+    messages=[{"role": "user", "content": "Hello"}],
+    metadata={"user_id": "user_123"}
+)
+
+# Compliance metadata
+print(response.acg.request_id)    # "req_abc123"
+print(response.acg.policy)        # "allow"
+print(response.acg.pii_detected)  # False
+print(response.acg.cost)          # 0.00045
+```
+
+## Error Handling
+
+```python
+from acg import ACG, ACGError
+
+try:
+    response = client.chat.completions.create(
+        model="gpt-4",
+        messages=[{"role": "user", "content": "Hello"}]
+    )
+except ACGError as e:
+    print(e.code)     # "RATE_LIMIT_EXCEEDED"
+    print(e.status)   # 429
+    print(e.message)  # "Rate limit exceeded"
+```
+
+## Async Support
+
+```python
+import asyncio
+from acg import AsyncACG
+
+async def main():
+    client = AsyncACG(api_key="acg_your_key_here")
+    response = await client.chat.completions.create(
+        model="gpt-4",
+        messages=[{"role": "user", "content": "Hello"}]
+    )
+    print(response.choices[0].message.content)
+
+asyncio.run(main())
+```

@@ -1,0 +1,175 @@
+{
+  "$schema": "https://mintlify.com/schema.json",
+  "name": "AI Compliance Gateway",
+  "logo": {
+    "dark": "/logo/dark.svg",
+    "light": "/logo/light.svg"
+  },
+  "favicon": "/favicon.svg",
+  "colors": {
+    "primary": "#0D9373",
+    "light": "#0D9373",
+    "dark": "#0D9373",
+    "anchors": {
+      "from": "#0D9373",
+      "to": "#6366F1"
+    }
+  },
+  "topbarLinks": [
+    {
+      "name": "GitHub",
+      "url": "https://github.com/your-org/ai-compliance-gateway"
+    }
+  ],
+  "topbarCtaButton": {
+    "name": "Get Started",
+    "url": "/getting-started/quickstart"
+  },
+  "tabs": [
+    {
+      "name": "Getting Started",
+      "url": "/getting-started"
+    },
+    {
+      "name": "Tutorials",
+      "url": "/tutorials"
+    },
+    {
+      "name": "Cookbooks",
+      "url": "/cookbooks"
+    },
+    {
+      "name": "API Reference",
+      "url": "/api"
+    },
+    {
+      "name": "Architecture",
+      "url": "/architecture"
+    },
+    {
+      "name": "Compliance",
+      "url": "/compliance"
+    },
+    {
+      "name": "Videos",
+      "url": "/videos"
+    },
+    {
+      "name": "Deployments",
+      "url": "/deployments"
+    }
+  ],
+  "navigation": [
+    {
+      "group": "Getting Started",
+      "pages": [
+        "getting-started/introduction",
+        "getting-started/quickstart",
+        "getting-started/concepts",
+        "getting-started/authentication"
+      ]
+    },
+    {
+      "group": "Tutorials",
+      "pages": [
+        "tutorials/first-scan",
+        "tutorials/compliance-integration",
+        "tutorials/compliance-packs",
+        "tutorials/monitoring",
+        "tutorials/production"
+      ]
+    },
+    {
+      "group": "Cookbooks",
+      "pages": [
+        "cookbooks/custom-policy",
+        "cookbooks/ci-cd-integration",
+        "cookbooks/policy-simulation",
+        "cookbooks/multi-tenant",
+        "cookbooks/enterprise-packs",
+        "cookbooks/community-plugins"
+      ]
+    },
+    {
+      "group": "API Reference",
+      "pages": [
+        "api/overview",
+        "api/chat-completions",
+        "api/moderations",
+        "api/compliance-scores",
+        "api/providers",
+        "api/organizations",
+        "api/api-keys",
+        "api/webhooks"
+      ]
+    },
+    {
+      "group": "Architecture",
+      "pages": [
+        "architecture/overview",
+        "architecture/kernel",
+        "architecture/engines",
+        "architecture/pipeline",
+        "architecture/event-bus"
+      ]
+    },
+    {
+      "group": "Compliance Packs",
+      "pages": [
+        "compliance/overview",
+        "compliance/dpdp",
+        "compliance/hipaa",
+        "compliance/gdpr",
+        "compliance/pci-dss",
+        "compliance/soc2",
+        "compliance/abdm",
+        "compliance/ai-safety",
+        "compliance/banking"
+      ]
+    },
+    {
+      "group": "Videos",
+      "pages": [
+        "videos/what-is-ai-compliance",
+        "videos/building-compliant-app",
+        "videos/architecture-deep-dive"
+      ]
+    },
+    {
+      "group": "Guides",
+      "pages": [
+        "guides/first-scan",
+        "guides/setting-up-policies",
+        "guides/billing-integration",
+        "guides/monitoring",
+        "guides/production-checklist"
+      ]
+    },
+    {
+      "group": "SDKs",
+      "pages": [
+        "sdks/nodejs",
+        "sdks/python",
+        "sdks/go"
+      ]
+    },
+    {
+      "group": "Deployments",
+      "pages": [
+        "deployments/overview",
+        "deployments/docker",
+        "deployments/kubernetes",
+        "deployments/cloud-providers",
+        "deployments/self-hosted"
+      ]
+    }
+  ],
+  "footerSocials": {
+    "github": "https://github.com/your-org/ai-compliance-gateway",
+    "twitter": "https://twitter.com/acg_ai",
+    "linkedin": "https://linkedin.com/company/acg-ai"
+  },
+  "feedback": {
+    "umbs": true
+  }
+}

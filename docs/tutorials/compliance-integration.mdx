@@ -1,0 +1,115 @@
+---
+title: "Tutorial: Adding Compliance to Your AI App"
+description: "Integrate ACG into a Node.js or Python application with 10 lines of code"
+---
+
+## Overview
+
+This tutorial shows how to add real-time compliance checks to your AI application using the ACG SDK. Every request to your LLM will be checked for PII, policy violations, and risk.
+
+**Time:** 10 minutes
+**Prerequisites:** ACG running (docker compose up), an API key
+
+## Step 1: Install the SDK
+
+```bash
+# Node.js
+npm install @acg/sdk
+
+# Python
+pip install httpx
+```
+
+## Step 2: Initialize the Client
+
+```typescript
+// Node.js
+import { ACGClient } from '@acg/sdk';
+
+const acg = new ACGClient({
+  gatewayUrl: 'http://localhost:3000',
+  adminUrl: 'http://localhost:3002',
+  apiKey: process.env.ACG_API_KEY!,
+  organizationId: 'my-org',
+  projectId: 'my-project',
+});
+```
+
+```python
+# Python
+import httpx
+
+class ACGClient:
+    def __init__(self, gateway_url, api_key):
+        self.gateway_url = gateway_url
+        self.headers = {"X-Api-Key": api_key}
+```
+
+## Step 3: Add Compliance to Chat
+
+```typescript
+// Before: Raw OpenAI call
+const response = await openai.chat.completions.create({
+  model: 'gpt-4',
+  messages: [{ role: 'user', content: userMessage }],
+});
+
+// After: ACG-wrapped call with compliance
+const response = await acg.chatCompletion({
+  model: 'gpt-4',
+  messages: [{ role: 'user', content: userMessage }],
+  compliancePack: 'hipaa',
+  piiDetectionEnabled: true,
+  firewallEnabled: true,
+});
+```
+
+## Step 4: Check the Response
+
+```typescript
+console.log(response.choices[0].message.content);  // LLM response
+console.log(response.policyDecisions);              // Policy decisions
+console.log(response.cost);                         // Cost breakdown
+console.log(response.piiResult);                    // PII detection
+console.log(response.firewallResult);               // Firewall results
+```
+
+## Step 5: Handle Policy Violations
+
+```typescript
+if (response.policyDecisions.length > 0) {
+  const violations = response.policyDecisions.filter(
+    (d: any) => d.decision === 'deny'
+  );
+
+  if (violations.length > 0) {
+    console.warn('Policy violations detected:');
+    for (const v of violations) {
+      console.warn(`  - ${v.rule}: ${v.reason}`);
+    }
+  }
+}
+```
+
+## What Happens Under the Hood
+
+```
+Your App → ACG Gateway → Policy Engine → Risk Engine → AI Provider
+                ↓              ↓              ↓
+          Rate Limiting    OPA Rules    PII Detection
+                ↓              ↓              ↓
+          Usage Tracking   Compliance   Audit Logging
+```
+
+Every request passes through:
+1. **Rate limiting** — Per-key, per-org limits
+2. **Policy engine** — OPA-based rules
+3. **Risk engine** — PII, injection, toxicity detection
+4. **AI provider** — Actual LLM call
+5. **Audit logging** — Full request/response trail
+
+## Next Steps
+
+- [Custom Policies](/cookbooks/custom-policy) — Write your own OPA rules
+- [Compliance Packs](/compliance/overview) — DPDP, HIPAA, GDPR, PCI-DSS
+- [Production Checklist](/guides/production-checklist) — Go-live checklist

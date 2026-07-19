@@ -1,0 +1,135 @@
+---
+title: "Cookbook: Multi-Tenant AI Compliance"
+description: "Manage compliance across multiple organizations, teams, or projects"
+---
+
+## Overview
+
+ACG supports multi-tenant compliance — each organization gets its own policies, compliance packs, usage quotas, and audit trails. This cookbook shows how to set up and manage multi-tenant deployments.
+
+## Organization Hierarchy
+
+```
+Organization (acme-corp)
+├── Project (customer-support)
+├── Project (internal-tools)
+├── Project (ai-research)
+└── Policies (org-wide defaults)
+```
+
+## Create Organizations
+
+```bash
+# Via CLI
+acg organizations create --name "Acme Corp" --slug acme-corp
+
+# Via API
+curl -X POST http://localhost:3002/v1/organizations \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Acme Corp",
+    "slug": "acme-corp",
+    "compliancePack": "soc2"
+  }'
+```
+
+## Per-Org Policies
+
+```typescript
+// Each org can have its own policies
+await acg.createPolicy({
+  organizationId: 'acme-corp',
+  name: 'no-competitor-models',
+  type: 'opa',
+  rules: [{
+    condition: 'input.request.model.startsWith("claude")',
+    action: 'deny',
+    reason: 'Acme Corp policy: use GPT-4 only',
+  }],
+});
+```
+
+## Per-Org Quotas
+
+```bash
+# Set usage limits per org
+curl -X PATCH http://localhost:3002/v1/subscriptions/acme-corp \
+  -H "Content-Type: application/json" \
+  -d '{
+    "tier": "business",
+    "requestsLimit": 500000,
+    "costLimit": 1000
+  }'
+```
+
+## Per-Org Compliance Packs
+
+```typescript
+// Org A: Healthcare (HIPAA)
+await acg.chatCompletion({
+  model: 'gpt-4',
+  messages: [{ role: 'user', content: 'Hello' }],
+  organizationId: 'hospital-a',
+  compliancePack: 'hipaa',
+});
+
+// Org B: Fintech (PCI-DSS + SOC2)
+await acg.chatCompletion({
+  model: 'gpt-4',
+  messages: [{ role: 'user', content: 'Hello' }],
+  organizationId: 'bank-b',
+  compliancePacks: ['pci-dss', 'soc2'],
+});
+```
+
+## Audit Trails
+
+```bash
+# View audit logs for specific org
+curl "http://localhost:3002/v1/audit-logs?organizationId=acme-corp&limit=100"
+
+# Export for compliance reporting
+curl "http://localhost:3002/v1/audit-logs?organizationId=acme-corp&format=csv" > audit.csv
+```
+
+## API Keys per Org
+
+```bash
+# Create org-specific API key
+curl -X POST http://localhost:3002/v1/api-keys \
+  -H "Content-Type: application/json" \
+  -d '{
+    "organizationId": "acme-corp",
+    "name": "production-key",
+    "scopes": ["chat:completions", "moderations"]
+  }'
+```
+
+## Billing per Org
+
+```bash
+# Each org has its own subscription
+curl -X POST http://localhost:3002/v1/subscriptions \
+  -H "Content-Type: application/json" \
+  -d '{
+    "organizationId": "acme-corp",
+    "tier": "business"
+  }'
+
+# Check usage
+curl http://localhost:3002/v1/subscriptions/acme-corp/usage
+```
+
+## Best Practices
+
+1. **Default policies** — Set org-wide defaults, let projects override
+2. **Separate API keys** — Never share keys across orgs
+3. **Audit everything** — Enable audit logging for all orgs
+4. **Regular reviews** — Monthly compliance score reviews per org
+5. **Cost alerts** — Set up alerts when usage approaches limits
+
+## Next Steps
+
+- [Compliance Packs](/compliance/overview) — Pre-built pack reference
+- [Enterprise Policies](/cookbooks/enterprise-policies) — Advanced multi-org patterns
+- [Billing Integration](/guides/billing-integration) — Usage-based billing

@@ -1,0 +1,121 @@
+---
+title: Deployment Overview
+description: Deployment options for ACG
+---
+
+# Deployment Overview
+
+ACG supports multiple deployment models. Choose based on your requirements.
+
+## Deployment Options
+
+| Option | Best For | Complexity | Cost |
+|--------|----------|------------|------|
+| Docker Compose | Development, small teams | Low | Free |
+| Kubernetes | Production, scaling | High | Infrastructure cost |
+| Managed Cloud | Teams wanting simplicity | Low | Subscription |
+
+## Docker Compose (Recommended for Getting Started)
+
+```bash
+git clone https://github.com/acg-ai/acg.git
+cd acg
+docker compose up -d
+```
+
+**Services:**
+- Gateway: http://localhost:3000
+- Admin API: http://localhost:3002
+- Dashboard: http://localhost:3000
+- PostgreSQL: localhost:5432
+- Redis: localhost:6379
+- NATS: localhost:4222
+- Keycloak: http://localhost:8081
+- OPA: http://localhost:8181
+
+**Production considerations:**
+- Use `.env` file for secrets
+- Enable TLS termination
+- Configure backup for PostgreSQL
+- Set resource limits
+
+## Kubernetes
+
+```bash
+# Install with Helm
+helm repo add acg https://acg-ai.github.io/helm
+helm install acg acg/acg \
+  --set gateway.apiKey=$API_KEY \
+  --set admin.postgresUrl=$DATABASE_URL
+
+# Or with manifests
+kubectl apply -f infra/kubernetes/
+```
+
+**Features:**
+- Horizontal scaling
+- Rolling updates
+- Resource limits
+- Network policies
+- Pod security
+
+## Managed Cloud
+
+Coming soon: `app.acg.ai`
+
+```bash
+# Login to managed cloud
+acg login --cloud
+
+# Use remote gateway
+acg scan . --remote
+```
+
+**Features:**
+- No infrastructure management
+- Automatic updates
+- SLA guarantee
+- Enterprise support
+- SSO/SAML integration
+
+## Configuration
+
+All deployment options share the same configuration:
+
+### Environment Variables
+
+| Variable | Description | Required |
+|----------|-------------|----------|
+| `DATABASE_URL` | PostgreSQL connection string | Yes |
+| `REDIS_URL` | Redis connection string | Yes |
+| `NATS_URL` | NATS connection string | Yes |
+| `KEYCLOAK_URL` | Keycloak URL | Yes |
+| `OPA_URL` | OPA URL | Yes |
+| `JWT_SECRET` | JWT signing secret | Yes |
+| `ACG_API_KEY` | Default API key | No |
+
+### Configuration Files
+
+- `docker-compose.yml` — Docker Compose services
+- `infra/helm/acg/values.yaml` — Helm chart values
+- `infra/kubernetes/` — Raw Kubernetes manifests
+
+## Production Checklist
+
+- [ ] TLS termination configured
+- [ ] Secrets in environment variables (not in code)
+- [ ] Database backups enabled
+- [ ] Monitoring configured (Prometheus/Grafana)
+- [ ] Log aggregation configured
+- [ ] Rate limiting enabled
+- [ ] API key rotation policy
+- [ ] Disaster recovery plan
+- [ ] Security review completed
+- [ ] Compliance validation passed
+
+## Further Reading
+
+- [Docker Compose Guide](docker-compose.mdx)
+- [Kubernetes Guide](kubernetes.mdx)
+- [Helm Chart Reference](helm.mdx)
+- [Security Configuration](../security/overview.mdx)

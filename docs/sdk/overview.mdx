@@ -1,0 +1,307 @@
+---
+title: SDK Documentation
+description: Use ACG in TypeScript/Python/Go applications
+---
+
+## TypeScript/JavaScript
+
+### Install
+
+```bash
+npm install @acg/sdk
+# or
+pnpm add @acg/sdk
+```
+
+### Initialize
+
+```typescript
+import { ACGClient } from '@acg/sdk';
+
+const acg = new ACGClient({
+  apiKey: 'your-api-key',
+  gatewayUrl: 'http://localhost:3000', // or https://gateway.acg.dev
+});
+```
+
+### Chat Completion
+
+```typescript
+const response = await acg.chat.completions.create({
+  model: 'gpt-4o-mini',
+  messages: [
+    { role: 'user', content: 'Hello, world!' }
+  ],
+});
+
+console.log(response.choices[0].message.content);
+```
+
+### With Compliance Pack
+
+```typescript
+const response = await acg.chat.completions.create({
+  model: 'gpt-4o-mini',
+  messages: [
+    { role: 'user', content: 'Summarize patient records for John Doe' }
+  ],
+  compliance: {
+    pack: 'hipaa',
+    strict: true,
+  },
+});
+
+if (!response.compliance?.allowed) {
+  console.error('Blocked:', response.compliance?.violations);
+}
+```
+
+### Streaming
+
+```typescript
+const stream = await acg.chat.completions.create({
+  model: 'gpt-4o-mini',
+  messages: [
+    { role: 'user', content: 'Tell me a story' }
+  ],
+  stream: true,
+});
+
+for await (const chunk of stream) {
+  const content = chunk.choices[0]?.delta?.content;
+  if (content) process.stdout.write(content);
+}
+```
+
+### Content Moderation
+
+```typescript
+const result = await acg.moderations.create({
+  input: 'This is some text to moderate',
+});
+
+if (result.results[0].flagged) {
+  console.log('Content flagged:', result.results[0].categories);
+}
+```
+
+### Error Handling
+
+```typescript
+import { ACGClient, PolicyViolationError, RateLimitError } from '@acg/sdk';
+
+const acg = new ACGClient({ apiKey: 'your-key' });
+
+try {
+  const response = await acg.chat.completions.create({
+    model: 'gpt-4o-mini',
+    messages: [{ role: 'user', content: 'Hello' }],
+  });
+} catch (error) {
+  if (error instanceof PolicyViolationError) {
+    console.error('Policy violation:', error.rule, error.reason);
+  } else if (error instanceof RateLimitError) {
+    console.error('Rate limited, retry after:', error.retryAfter);
+  } else {
+    throw error;
+  }
+}
+```
+
+---
+
+## Python
+
+### Install
+
+```bash
+pip install acg-sdk
+```
+
+### Initialize
+
+```python
+from acg_sdk import ACGClient
+
+client = ACGClient(
+    api_key="your-api-key",
+    gateway_url="http://localhost:3000"
+)
+```
+
+### Chat Completion
+
+```python
+response = client.chat.completions.create(
+    model="gpt-4o-mini",
+    messages=[
+        {"role": "user", "content": "Hello, world!"}
+    ]
+)
+
+print(response.choices[0].message.content)
+```
+
+### With Compliance Pack
+
+```python
+response = client.chat.completions.create(
+    model="gpt-4o-mini",
+    messages=[
+        {"role": "user", "content": "Summarize patient records"}
+    ],
+    compliance={
+        "pack": "hipaa",
+        "strict": True
+    }
+)
+
+if not response.compliance.allowed:
+    print("Blocked:", response.compliance.violations)
+```
+
+### Streaming
+
+```python
+stream = client.chat.completions.create(
+    model="gpt-4o-mini",
+    messages=[{"role": "user", "content": "Tell me a story"}],
+    stream=True
+)
+
+for chunk in stream:
+    if chunk.choices[0].delta.content:
+        print(chunk.choices[0].delta.content, end="")
+```
+
+### Content Moderation
+
+```python
+result = client.moderations.create(
+    input="This is some text to moderate"
+)
+
+if result.results[0].flagged:
+    print("Content flagged:", result.results[0].categories)
+```
+
+### Error Handling
+
+```python
+from acg_sdk import ACGClient, PolicyViolationError, RateLimitError
+
+client = ACGClient(api_key="your-key")
+
+try:
+    response = client.chat.completions.create(
+        model="gpt-4o-mini",
+        messages=[{"role": "user", "content": "Hello"}]
+    )
+except PolicyViolationError as e:
+    print(f"Policy violation: {e.rule} - {e.reason}")
+except RateLimitError as e:
+    print(f"Rate limited, retry after: {e.retry_after}")
+```
+
+---
+
+## Go
+
+### Install
+
+```bash
+go get github.com/acg-dev/acg-sdk-go
+```
+
+### Initialize
+
+```go
+import "github.com/acg-dev/acg-sdk-go"
+
+client := acg.NewClient(
+    acg.WithAPIKey("your-api-key"),
+    acg.WithGatewayURL("http://localhost:3000"),
+)
+```
+
+### Chat Completion
+
+```go
+response, err := client.Chat.Completions.Create(context.Background(), &acg.ChatCompletionRequest{
+    Model: "gpt-4o-mini",
+    Messages: []acg.Message{
+        {Role: "user", Content: "Hello, world!"},
+    },
+})
+
+if err != nil {
+    log.Fatal(err)
+}
+
+fmt.Println(response.Choices[0].Message.Content)
+```
+
+### With Compliance Pack
+
+```go
+response, err := client.Chat.Completions.Create(context.Background(), &acg.ChatCompletionRequest{
+    Model: "gpt-4o-mini",
+    Messages: []acg.Message{
+        {Role: "user", Content: "Summarize patient records"},
+    },
+    Compliance: &acg.ComplianceConfig{
+        Pack:   "hipaa",
+        Strict: true,
+    },
+})
+
+if err != nil {
+    var policyErr *acg.PolicyViolationError
+    if errors.As(err, &policyErr) {
+        fmt.Printf("Blocked: %s - %s\n", policyErr.Rule, policyErr.Reason)
+    }
+}
+```
+
+---
+
+## Environment Variables
+
+All SDKs support environment variables:
+
+| Variable | Description |
+|---|---|
+| `ACG_API_KEY` | API key for authentication |
+| `ACG_GATEWAY_URL` | Gateway URL |
+| `ACG_TIMEOUT` | Request timeout in seconds (default: 30) |
+
+---
+
+## API Reference
+
+### Client Options
+
+| Option | Type | Default | Description |
+|---|---|---|---|
+| `apiKey` | string | — | API key (required) |
+| `gatewayUrl` | string | `http://localhost:3000` | Gateway URL |
+| `timeout` | number | `30000` | Request timeout (ms) |
+| `maxRetries` | number | `3` | Max retry attempts |
+
+### Methods
+
+| Method | Description |
+|---|---|
+| `chat.completions.create()` | Create chat completion |
+| `moderations.create()` | Create moderation |
+
+### Types
+
+| Type | Description |
+|---|---|
+| `ChatCompletionRequest` | Request body |
+| `ChatCompletionResponse` | Response body |
+| `Message` | Chat message |
+| `ComplianceConfig` | Compliance configuration |
+| `PolicyViolationError` | Policy violation error |
+| `RateLimitError` | Rate limit error |

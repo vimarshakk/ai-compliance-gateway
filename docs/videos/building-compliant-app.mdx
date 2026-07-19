@@ -1,0 +1,123 @@
+---
+title: "Video: Building a Compliant AI App in 10 Minutes"
+description: "Live coding tutorial — integrate ACG into a Node.js or Python app"
+---
+
+## Script
+
+**[0:00-0:15] Intro**
+
+> I'm going to show you how to add enterprise-grade compliance to any AI app in under 10 minutes. No config files. No complex setup. Just code.
+
+**[0:15-0:45] Setup**
+
+> First, let's get ACG running. One command:
+
+```bash
+docker compose up -d
+```
+
+> That starts the gateway, admin API, and dashboard. Let's verify:
+
+```bash
+curl localhost:3000/health
+```
+
+**[0:45-2:00] Install & Configure**
+
+> Now install the SDK:
+
+```bash
+npm install @acg/sdk
+```
+
+> Create a client:
+
+```typescript
+import { ACGClient } from '@acg/sdk';
+
+const acg = new ACGClient({
+  gatewayUrl: 'http://localhost:3000',
+  adminUrl: 'http://localhost:3002',
+  apiKey: 'dev-key',
+});
+```
+
+**[2:00-4:00] First Request**
+
+> Send a chat completion with HIPAA compliance:
+
+```typescript
+const response = await acg.chatCompletion({
+  model: 'gpt-4',
+  messages: [{ role: 'user', content: 'What are diabetes symptoms?' }],
+  compliancePack: 'hipaa',
+  piiDetectionEnabled: true,
+});
+```
+
+> Notice the compliance metadata in the response — policy decisions, PII detection, risk level.
+
+**[4:00-6:00] PII Detection**
+
+> Let's test PII detection. Send a message with an SSN:
+
+```typescript
+const response = await acg.chatCompletion({
+  model: 'gpt-4',
+  messages: [{ role: 'user', content: 'My SSN is 123-45-6789' }],
+  compliancePack: 'hipaa',
+});
+```
+
+> ACG detected the SSN and flagged it. In production, this would block the request.
+
+**[6:00-8:00] Score & Monitor**
+
+> Check your compliance score:
+
+```bash
+acg score
+```
+
+> 72 out of 100. Let's see what's missing:
+
+```
+Secret Management: 18/25  — 1 secret found
+Guardrail Coverage: 12/20 — No guardrails detected
+```
+
+> Fix the secret, add a guardrail, and re-scan.
+
+**[8:00-9:30] Dashboard**
+
+> Open the dashboard at localhost:3003. You can see:
+> - Real-time request flow
+> - Compliance scores over time
+> - Cost breakdown by model
+> - Audit trail
+
+**[9:30-10:00] Wrap Up**
+
+> That's it. In 10 minutes we:
+> 1. Deployed ACG
+> 2. Integrated the SDK
+> 3. Enabled HIPAA compliance
+> 4. Tested PII detection
+> 5. Got a compliance score
+> 6. Saw the dashboard
+
+> All open source. Free tier. Start at acg.ai.
+
+## Visual Notes
+
+- Screen recording of terminal + code editor
+- Dashboard walkthrough
+- Split screen: code on left, output on right
+- Architecture diagram overlay at 6:00 mark
+
+## Distribution
+
+- YouTube (10 min full tutorial)
+- Dev.to blog post (written version)
+- Twitter/X thread (key moments)
