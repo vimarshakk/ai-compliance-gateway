@@ -1,0 +1,37 @@
+FROM node:20-slim AS base
+RUN npm install -g pnpm@9
+
+FROM base AS deps
+WORKDIR /app
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY apps/playground/package.json ./apps/playground/
+COPY packages/shared/package.json ./packages/shared/
+COPY packages/sdk-typescript/package.json ./packages/sdk-typescript/
+RUN pnpm install --frozen-lockfile
+
+FROM base AS builder
+WORKDIR /app
+COPY --from=deps /app/node_modules ./node_modules
+COPY --from=deps /app/apps/playground/node_modules ./apps/playground/node_modules
+COPY --from=deps /app/packages/shared/node_modules ./packages/shared/node_modules
+COPY --from=deps /app/packages/sdk-typescript/node_modules ./packages/sdk-typescript/node_modules
+COPY . .
+RUN pnpm --filter @acg/shared build
+RUN pnpm --filter @acg/sdk build
+RUN pnpm --filter @acg/playground build
+
+FROM node:20-slim AS runner
+WORKDIR /app
+ENV NODE_ENV=production
+RUN addgroup --system --gid 1001 nodejs && adduser --system --uid 1001 nextjs
+
+COPY --from=builder /app/apps/playground/.next/standalone ./
+COPY --from=builder /app/apps/playground/.next/static ./apps/playground/.next/static
+COPY --from=builder /app/apps/playground/public ./apps/playground/public
+
+USER nextjs
+EXPOSE 3006
+ENV PORT=3006
+ENV HOSTNAME="0.0.0.0"
+
+CMD ["node", "apps/playground/server.js"]
