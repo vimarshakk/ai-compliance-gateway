@@ -1,0 +1,12 @@
+storage:
+  storage_path: /qdrant/storage
+  snapshots_path: /qdrant/snapshots
+  snapshots_config:
+    snapshots_storage: local
+
+service:
+  grpc_port: 6334
+  http_port: 6333
+  host: "0.0.0.0"
+
+log_level: info
