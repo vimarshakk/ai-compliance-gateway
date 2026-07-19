@@ -1,0 +1,88 @@
+---
+title: "Tutorial: Monitoring AI Usage & Costs"
+description: "Track token usage, costs, and compliance metrics across your AI fleet"
+---
+
+## Overview
+
+ACG automatically tracks every AI request — tokens, costs, latency, compliance decisions. This tutorial shows how to use the dashboard, API, and CLI to monitor your AI usage.
+
+**Time:** 5 minutes
+**Prerequisites:** ACG running, some API traffic
+
+## Step 1: Dashboard Overview
+
+Navigate to `http://localhost:3003` (Dashboard). Key views:
+
+- **Overview** — Total requests, tokens, cost, compliance score
+- **Compliance Scores** — Score history with trend lines
+- **AI Providers** — Provider health and compliance features
+- **Projects** — Per-project usage breakdown
+
+## Step 2: Query Usage via API
+
+```bash
+# Get compliance scores
+curl http://localhost:3002/v1/compliance/scores \
+  -H "Content-Type: application/json"
+
+# Get score history
+curl http://localhost:3002/v1/compliance/scores/history?days=30
+
+# List AI providers
+curl http://localhost:3002/v1/providers
+```
+
+## Step 3: CLI Monitoring
+
+```bash
+# View compliance score
+acg score
+
+# View score history
+acg score --history --days 7
+
+# List compliance packs
+acg packs
+```
+
+## Step 4: Set Up Alerts
+
+```typescript
+// Check compliance score periodically
+const scores = await fetch('http://localhost:3002/v1/compliance/scores/history?days=1');
+const { history } = await scores.json();
+
+const latest = history[0];
+if (latest.score < 70) {
+  // Alert: compliance score dropped
+  await slack.send(`⚠️ Compliance score dropped to ${latest.score}/100`);
+}
+```
+
+## Step 5: Export Reports
+
+```bash
+# Export usage data as CSV
+curl "http://localhost:3002/v1/compliance/scores?format=csv" > report.csv
+
+# Export audit logs
+curl "http://localhost:3002/v1/audit-logs?format=json" > audit.json
+```
+
+## Key Metrics
+
+| Metric | Description | Where |
+|--------|-------------|-------|
+| Compliance Score | 0-100 score across 6 categories | Dashboard, CLI, API |
+| Token Usage | Input/output tokens per request | Dashboard, API |
+| Cost | USD cost per request | Dashboard, API |
+| Policy Decisions | Allow/deny per request | API, Logs |
+| Latency | Response time in ms | Dashboard, API |
+| Risk Level | Low/medium/high per request | API, Logs |
+
+## Next Steps
+
+- [Production Checklist](/guides/production-checklist) — Go-live checklist
+- [Monitoring Setup](/guides/monitoring) — Prometheus/Grafana integration
+- [Billing Integration](/guides/billing-integration) — Usage-based billing

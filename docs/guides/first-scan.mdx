@@ -1,0 +1,90 @@
+---
+title: "First Scan"
+description: "Scan your codebase for compliance issues"
+---
+
+## Overview
+
+The `acg scan` command analyzes your codebase for AI-related security and compliance issues.
+
+## Running a Scan
+
+```bash
+# Scan current directory
+acg scan
+
+# Scan specific path
+acg scan /path/to/project
+
+# Output as JSON
+acg scan --json
+```
+
+## What Gets Scanned
+
+| Category | Detection Method |
+|----------|-----------------|
+| **Secrets** | Regex patterns for API keys, tokens, private keys |
+| **AI SDKs** | Import/require patterns for OpenAI, Anthropic, etc. |
+| **Model References** | String patterns for GPT-4, Claude, etc. |
+| **Environment Variables** | Known AI-related env vars |
+| **Prompt Files** | Files matching prompt/template patterns |
+| **Observability Configs** | Langfuse, LangSmith, Helicone configs |
+
+## Example Output
+
+```
+┌─────────────────────────────────────────────────┐
+│           AI Compliance Scan                    │
+└─────────────────────────────────────────────────┘
+
+  Files scanned: 234
+  Findings: 12
+
+  🔴 CRITICAL: 2 secrets detected
+    • OpenAI API Key in src/config.ts:15
+    • Bearer Token in src/api.ts:42
+
+  🟡 MEDIUM: 5 AI env vars detected
+    • OPENAI_API_KEY in .env.local:1
+    • ANTHROPIC_API_KEY in .env.local:2
+
+  ℹ️ INFO: 3 AI SDKs detected
+    • openai (package.json)
+    • langchain (package.json)
+    • @anthropic-ai/sdk (src/llm.ts)
+
+  Risk Score: 75/100
+```
+
+## Scan Results Structure
+
+```typescript
+interface ScanResult {
+  rootPath: string;
+  filesScanned: number;
+  findings: ScanFinding[];
+  summary: {
+    sdks: string[];
+    promptsFound: number;
+    secretsFound: number;
+    envVarsFound: number;
+    configsFound: number;
+    modelRefs: string[];
+    riskScore: number;
+  };
+}
+```
+
+## CI/CD Integration
+
+```yaml
+# GitHub Actions
+- name: ACG Scan
+  run: |
+    npx @acg/cli scan --json > scan-results.json
+    if [ $(cat scan-results.json | jq .summary.secretsFound) -gt 0 ]; then
+      echo "Secrets detected! Failing build."
+      exit 1
+    fi
+```

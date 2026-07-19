@@ -1,0 +1,113 @@
+---
+title: "Node.js SDK"
+description: "Official Node.js SDK for AI Compliance Gateway"
+---
+
+## Installation
+
+```bash
+npm install @acg/sdk
+# or
+yarn add @acg/sdk
+# or
+pnpm add @acg/sdk
+```
+
+## Quick Start
+
+```typescript
+import { ACG } from '@acg/sdk';
+
+const acg = new ACG({
+  apiKey: 'acg_your_key_here',
+  baseUrl: 'https://api.acg.ai', // or http://localhost:3000
+});
+
+// Chat completion (OpenAI-compatible)
+const response = await acg.chat.completions.create({
+  model: 'gpt-4',
+  messages: [
+    { role: 'user', content: 'Hello!' }
+  ],
+});
+
+console.log(response.choices[0].message.content);
+console.log(response.acg); // Compliance metadata
+```
+
+## Configuration
+
+```typescript
+const acg = new ACG({
+  apiKey: process.env.ACG_API_KEY,
+  baseUrl: 'https://api.acg.ai',
+  timeout: 30000,
+  maxRetries: 3,
+});
+```
+
+## Streaming
+
+```typescript
+const stream = await acg.chat.completions.create({
+  model: 'gpt-4',
+  messages: [{ role: 'user', content: 'Tell me a story' }],
+  stream: true,
+});
+
+for await (const chunk of stream) {
+  process.stdout.write(chunk.choices[0]?.delta?.content || '');
+}
+```
+
+## Compliance Metadata
+
+Every response includes compliance data:
+
+```typescript
+const response = await acg.chat.completions.create({
+  model: 'gpt-4',
+  messages: [{ role: 'user', content: 'Hello' }],
+  metadata: {
+    userId: 'user_123',
+    sessionId: 'session_456',
+  },
+});
+
+// Compliance metadata
+console.log(response.acg.requestId);   // "req_abc123"
+console.log(response.acg.policy);      // "allow"
+console.log(response.acg.piiDetected); // false
+console.log(response.acg.cost);        // 0.00045
+```
+
+## Error Handling
+
+```typescript
+import { ACG, ACGError } from '@acg/sdk';
+
+try {
+  const response = await acg.chat.completions.create({
+    model: 'gpt-4',
+    messages: [{ role: 'user', content: 'Hello' }],
+  });
+} catch (error) {
+  if (error instanceof ACGError) {
+    console.error(error.code);     // "RATE_LIMIT_EXCEEDED"
+    console.error(error.status);   // 429
+    console.error(error.message);  // "Rate limit exceeded"
+  }
+}
+```
+
+## TypeScript Support
+
+Full TypeScript support with type definitions:
+
+```typescript
+import type {
+  ChatCompletion,
+  ChatCompletionMessage,
+  ChatCompletionCreateParams,
+} from '@acg/sdk';
+```

@@ -1,0 +1,112 @@
+---
+title: "Tutorial: Going to Production"
+description: "Deploy ACG to production with SSL, monitoring, and high availability"
+---
+
+## Overview
+
+This tutorial covers everything you need to deploy ACG to production: SSL, monitoring, scaling, and security hardening.
+
+**Time:** 20 minutes
+**Prerequisites:** VPS or cloud instance, Docker installed
+
+## Step 1: Provision Infrastructure
+
+```bash
+# Minimum requirements
+# - 2 vCPU, 4 GB RAM
+# - 50 GB SSD
+# - Ubuntu 22.04 LTS
+# - Ports 80, 443, 3000, 3002 open
+
+# Install Docker
+curl -fsSL https://get.docker.com | sh
+```
+
+## Step 2: Configure Environment
+
+```bash
+# Clone the repo
+git clone https://github.com/your-org/ai-compliance-gateway.git
+cd ai-compliance-gateway
+
+# Create production env
+cat > .env.production << 'EOF'
+POSTGRES_PASSWORD=$(openssl rand -base64 32)
+JWT_SECRET=$(openssl rand -base64 32)
+NEXTAUTH_SECRET=$(openssl rand -base64 32)
+SALT=$(openssl rand -base64 16)
+ENCRYPTION_KEY=$(openssl rand -base64 32)
+KEYCLOAK_ADMIN_PASSWORD=$(openssl rand -base64 16)
+EOF
+```
+
+## Step 3: Deploy with Docker Compose
+
+```bash
+# Production deployment
+docker compose -f docker-compose.yml up -d
+
+# Verify all services
+docker compose ps
+```
+
+## Step 4: Enable SSL
+
+```bash
+# Using Let's Encrypt
+apt install certbot
+certbot certonly --standalone -d acg.yourdomain.com
+
+# Update nginx config with SSL paths
+# See: deployments/nginx/ssl.conf
+```
+
+## Step 5: Set Up Monitoring
+
+```bash
+# Prometheus + Grafana
+docker compose -f docker-compose.yml --profile observability up -d
+
+# Access Grafana at :3000 (default credentials)
+# Import ACG dashboard: grafana.com/dashboards/XXXXX
+```
+
+## Step 6: Configure Backups
+
+```bash
+# Daily PostgreSQL backup
+cat > /etc/cron.d/acg-backup << 'EOF'
+0 2 * * * root docker exec acg-postgres pg_dump -U acg acg | gzip > /backups/acg-$(date +\%Y\%m\%d).sql.gz
+EOF
+```
+
+## Step 7: Verify Production
+
+```bash
+# Health check
+curl https://acg.yourdomain.com/health
+
+# API test
+curl https://acg.yourdomain.com/chat/completions \
+  -H "X-Api-Key: your-prod-key" \
+  -H "Content-Type: application/json" \
+  -d '{"model":"gpt-4","messages":[{"role":"user","content":"test"}]}'
+```
+
+## Production Checklist
+
+- [ ] SSL enabled and auto-renewing
+- [ ] Backups configured and tested
+- [ ] Monitoring dashboards set up
+- [ ] API keys rotated (no dev keys in prod)
+- [ ] Rate limits configured
+- [ ] Compliance packs enabled
+- [ ] Audit logging enabled
+- [ ] Alert notifications configured
+
+## Next Steps
+
+- [Docker Deployment](/deployments/docker) — Full Docker reference
+- [Kubernetes Deployment](/deployments/kubernetes) — K8s manifests
+- [Cloud Providers](/deployments/cloud-providers) — AWS, GCP, Azure guides

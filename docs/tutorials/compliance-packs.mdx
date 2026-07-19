@@ -1,0 +1,120 @@
+---
+title: "Tutorial: Setting Up Compliance Packs"
+description: "Enable DPDP, HIPAA, GDPR, or custom compliance packs in minutes"
+---
+
+## Overview
+
+Compliance packs are pre-built rule sets that enforce regulatory requirements on every AI request. This tutorial shows how to enable, configure, and test compliance packs.
+
+**Time:** 10 minutes
+**Prerequisites:** ACG running, API key
+
+## Available Packs
+
+| Pack | Regulation | Region |
+|------|-----------|--------|
+| `dpdp` | Digital Personal Data Protection Act | India |
+| `hipaa` | Health Insurance Portability and Accountability Act | US |
+| `gdpr` | General Data Protection Regulation | EU |
+| `pci-dss` | Payment Card Industry Data Security Standard | Global |
+| `soc2` | SOC 2 Type II | Global |
+| `abdm` | Ayushman Bharat Digital Mission | India |
+| `ai-safety` | AI Safety Guidelines | Global |
+| `banking` | Banking Regulations | India |
+
+## Step 1: Enable a Pack via SDK
+
+```typescript
+const response = await acg.chatCompletion({
+  model: 'gpt-4',
+  messages: [{ role: 'user', content: 'Hello' }],
+  compliancePack: 'dpdp',  // Enable DPDP pack
+});
+```
+
+## Step 2: Enable Multiple Packs
+
+```typescript
+const response = await acg.chatCompletion({
+  model: 'gpt-4',
+  messages: [{ role: 'user', content: 'Hello' }],
+  compliancePacks: ['dpdp', 'ai-safety'],  // Multiple packs
+});
+```
+
+## Step 3: Create a Custom Pack
+
+```bash
+# Create a pack directory
+mkdir -p packs/my-company
+
+# Add a Rego policy
+cat > packs/my-company/policy.rego << 'EOF'
+package acg.compliance.my_company
+
+default deny = false
+
+# Block PII in responses
+deny contains msg if {
+    input.response.contains("SSN")
+    msg := "SSN detected in response — block"
+}
+
+# Require consent for data collection
+deny contains msg if {
+    input.request.collects_data
+    not input.request.consent_given
+    msg := "Data collection requires consent"
+}
+EOF
+```
+
+## Step 4: Register the Pack
+
+```typescript
+// Via Admin API
+await fetch('http://localhost:3002/v1/policies', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    organizationId: 'my-org',
+    name: 'my-company',
+    type: 'compliance-pack',
+    rules: [{ file: 'packs/my-company/policy.rego' }],
+  }),
+});
+```
+
+## Step 5: Test the Pack
+
+```typescript
+// This should trigger the SSN block
+const response = await acg.chatCompletion({
+  model: 'gpt-4',
+  messages: [
+    { role: 'user', content: 'What is 123-45-6789?' },
+  ],
+  compliancePack: 'my-company',
+});
+
+if (response.policyDecisions.length > 0) {
+  console.log('Pack is working — violations detected');
+}
+```
+
+## Step 6: View Compliance Scores
+
+```bash
+# Check your compliance score
+acg score
+
+# View scores over time
+acg score --history
+```
+
+## Next Steps
+
+- [Custom Policies](/cookbooks/custom-policy) — Write OPA rules from scratch
+- [Compliance Packs Reference](/compliance/overview) — Full pack documentation
+- [Policy Simulation](/cookbooks/policy-simulation) — Test policies before deploying

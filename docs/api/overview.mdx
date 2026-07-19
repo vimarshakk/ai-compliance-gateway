@@ -1,0 +1,87 @@
+---
+title: "API Overview"
+description: "REST API reference for AI Compliance Gateway"
+---
+
+## Base URLs
+
+| Environment | URL |
+|-------------|-----|
+| Gateway | `https://api.acg.ai` |
+| Admin | `https://admin.acg.ai` |
+| Dashboard | `https://dashboard.acg.ai` |
+| Local Gateway | `http://localhost:3000` |
+| Local Admin | `http://localhost:3002` |
+
+## Authentication
+
+All API requests require an `X-Api-Key` header:
+
+```bash
+curl https://api.acg.ai/chat/completions \
+  -H "X-Api-Key: acg_your_key_here"
+```
+
+## Response Format
+
+All responses follow a consistent format:
+
+```json
+{
+  "data": { ... },
+  "meta": {
+    "requestId": "req_abc123",
+    "timestamp": "2025-01-01T00:00:00Z"
+  }
+}
+```
+
+## Error Responses
+
+```json
+{
+  "error": {
+    "code": "RATE_LIMIT_EXCEEDED",
+    "message": "Rate limit exceeded. Retry after 60 seconds.",
+    "details": {
+      "limit": 60,
+      "remaining": 0,
+      "reset": 1640995200
+    }
+  }
+}
+```
+
+## API Versioning
+
+The API is versioned via URL path:
+
+```
+/v1/chat/completions
+/v1/moderations
+/v1/compliance/scores
+```
+
+Breaking changes are only introduced in new major versions.
+
+## Rate Limits
+
+Rate limits are applied per API key:
+
+| Endpoint | Rate Limit |
+|----------|-----------|
+| `/v1/chat/completions` | 60 req/min |
+| `/v1/moderations` | 120 req/min |
+| `/v1/compliance/*` | 30 req/min |
+
+## Pagination
+
+List endpoints use cursor-based pagination:
+
+```bash
+# First page
+GET /v1/organizations?limit=20
+
+# Next page
+GET /v1/organizations?limit=20&cursor=eyJpZCI6Im9yZ14xMjM0In0=
+```

@@ -1,0 +1,142 @@
+---
+title: "Video: ACG Architecture Deep Dive"
+description: "15-minute technical walkthrough of the kernel, engines, and pipeline"
+---
+
+## Script
+
+**[0:00-0:30] Intro**
+
+> This is a technical deep dive into AI Compliance Gateway's architecture. If you're building on ACG or contributing to it, this is the video to watch.
+
+**[0:30-2:00] System Overview**
+
+> ACG has four layers:
+
+```
+┌─────────────────────────────────────┐
+│  Surfaces (CLI, Dashboard, SDK)     │
+├─────────────────────────────────────┤
+│  Admin API + Gateway                │
+├─────────────────────────────────────┤
+│  Kernel (Plugin Runtime, Evidence)  │
+├─────────────────────────────────────┤
+│  Engines (Router, Risk, Governance) │
+└─────────────────────────────────────┘
+```
+
+> Every request flows through the pipeline:
+
+```
+Request → Rate Limit → Auth → Policy → Risk → Route → Provider → Response → Evidence
+```
+
+**[2:00-4:00] The Kernel**
+
+> The kernel is the brain. It has five components:
+
+1. **Plugin Runtime** — Loads and manages engines
+2. **Rule Engine** — Evaluates OPA policies
+3. **Registry** — Stores policies, packs, configs
+4. **Asset Graph** — Maps your AI supply chain
+5. **Evidence Engine** — Creates tamper-proof audit trail
+
+> Everything is async. Everything has lifecycle hooks.
+
+**[4:00-7:00] Engines**
+
+> Four built-in engines:
+
+1. **AI Router** — Tier-based model selection, circuit breakers, failover
+2. **Risk Engine** — PII detection, injection detection, toxicity scoring
+3. **Governance Engine** — Token limits, model allow/block lists, cost caps
+4. **Compliance Engine** — DPDP, HIPAA, GDPR, PCI-DSS packs
+
+> Each engine implements the `Engine` interface:
+
+```typescript
+interface Engine {
+  metadata: EngineMetadata;
+  execute(input: EngineInput): Promise<EngineOutput>;
+}
+```
+
+> Engines are composable. You can add your own by registering a plugin.
+
+**[7:00-9:00] Pipeline Runner**
+
+> The pipeline runner orchestrates engines across stages:
+
+```
+pre-request → routing → request → post-response → evidence → billing
+```
+
+> Each stage runs its engines in priority order. Fail-closed by default — if an engine crashes, the request is blocked.
+
+> Timing is tracked per-engine. Violations are aggregated. Evidence is generated.
+
+**[9:00-11:00] Evidence Chain**
+
+> Every request generates evidence:
+
+```typescript
+{
+  id: "uuid",
+  requestId: "req-123",
+  type: "compliance",
+  pluginId: "compliance-engine",
+  ruleId: "hipaa-phi-block",
+  decision: "deny",
+  timestamp: "2024-01-15T10:30:00Z",
+  hash: "sha256:...",
+  previousHash: "sha256:..."
+}
+```
+
+> The hash chain is tamper-proof. If someone modifies an evidence record, the chain breaks. This is how you prove compliance to auditors.
+
+**[11:00-13:00] Data Flow**
+
+```
+App → Gateway (port 3000) → Pipeline Runner
+  │                              │
+  │                              ├→ Rate Limiter (memory)
+  │                              ├→ API Key Auth (PostgreSQL)
+  │                              ├→ Plan Enforcement (PostgreSQL)
+  │                              ├→ OPA Policy Engine
+  │                              ├→ Risk Engine (in-memory)
+  │                              ├→ AI Router (in-memory)
+  │                              ├→ AI Provider (external)
+  │                              ├→ Compliance Engine (OPA)
+  │                              └→ Evidence Engine (PostgreSQL)
+  │
+  └→ Admin API (port 3002) → Dashboard (port 3003)
+```
+
+**[13:00-14:30] Extensibility**
+
+> Three ways to extend ACG:
+
+1. **Custom Engines** — Implement the `Engine` interface, register as plugin
+2. **OPA Policies** — Write Rego rules, deploy via API
+3. **Community Plugins** — npm packages that plug into the kernel
+
+> The plugin runtime handles lifecycle, activation, deactivation. Engines can be hot-swapped.
+
+**[14:30-15:00] Outro**
+
+> That's the architecture. Kernel-based, plugin-driven, evidence-backed. Everything is open source. Check the docs at acg.ai/docs.
+
+## Visual Notes
+
+- Architecture diagrams (animated)
+- Code walkthroughs (editor + terminal)
+- Data flow diagrams
+- Evidence chain visualization
+- Plugin registration flow
+
+## Distribution
+
+- YouTube (15 min technical deep dive)
+- Dev.to blog post (architecture overview)
+- Conference talk version (20 min with Q&A)

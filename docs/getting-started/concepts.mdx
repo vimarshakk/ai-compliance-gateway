@@ -1,0 +1,99 @@
+---
+title: "Core Concepts"
+description: "Understanding the ACG architecture"
+---
+
+## The AI Request Pipeline
+
+Every request to ACG flows through a deterministic pipeline:
+
+```
+Client Request
+    │
+    ▼
+┌─────────────────┐
+│  Rate Limiter   │ ← Per-org, per-key limits
+└────────┬────────┘
+         ▼
+┌─────────────────┐
+│  API Key Auth   │ ← Validate X-Api-Key header
+└────────┬────────┘
+         ▼
+┌─────────────────┐
+│  PII Detection  │ ← Presidio redacts sensitive data
+└────────┬────────┘
+         ▼
+┌─────────────────┐
+│  Policy Check   │ ← OPA evaluates rules
+└────────┬────────┘
+         ▼
+┌─────────────────┐
+│  Jailbreak      │ ← NeMo blocks prompt injection
+│  Prevention     │
+└────────┬────────┘
+         ▼
+┌─────────────────┐
+│  LLM Provider   │ ← LiteLLM routes to provider
+└────────┬────────┘
+         ▼
+┌─────────────────┐
+│  Output Filter  │ ← Post-process response
+└────────┬────────┘
+         ▼
+┌─────────────────┐
+│  Audit Log      │ ← Immutable audit trail
+└────────┬────────┘
+         ▼
+┌─────────────────┐
+│  Usage Tracking │ ← Token/cost accounting
+└─────────────────┘
+```
+
+## Organization Hierarchy
+
+```
+Organization
+├── Project (dev, staging, prod)
+│   ├── API Keys
+│   ├── Policies
+│   └── Audit Logs
+├── Users
+├── Subscription
+└── Compliance Scores
+```
+
+### Organization
+The top-level tenant. Has billing, subscription, and compliance settings.
+
+### Project
+A logical grouping within an organization. Each project gets its own API keys and audit logs.
+
+### API Key
+Authenticates requests. Scoped to a project with specific permissions.
+
+## Kernel Components
+
+The **Platform Kernel** (`@acg/kernel`) is the execution core:
+
+| Component | Purpose |
+|-----------|---------|
+| **Plugin Runtime** | Dynamic plugin loading with lifecycle hooks |
+| **Rule Engine** | ESLint-style rule evaluation |
+| **Registry** | Centralized component registry |
+| **Asset Graph** | Dependency tracking between AI assets |
+| **Evidence Engine** | Tamper-proof audit trail with hash chain |
+
+## Compliance Packs
+
+Pre-built rule sets for regulatory frameworks:
+
+| Pack | Region | Controls |
+|------|--------|----------|
+| DPDP | India | Consent, data minimization, purpose limitation |
+| HIPAA | US | Encryption, audit logging, PHI redaction |
+| GDPR | EU | Consent, right to erasure, data portability |
+| PCI-DSS | Global | Card masking, encryption, access control |
+| SOC 2 | Global | Access control, encryption, monitoring |
+| ABDM | India | ABHA verification, consent artifacts |
+| AI Safety | Global | Prompt injection, jailbreak, data leakage |
+| Banking | India | Data localization, fraud detection |
