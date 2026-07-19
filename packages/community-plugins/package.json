@@ -1,0 +1,19 @@
+{
+  "name": "@acg/community-plugins",
+  "version": "0.1.0",
+  "description": "Community plugin system — manifest format, validation, sandbox for third-party extensions",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "typescript": "^5.7.0",
+    "vitest": "^3.0.0"
+  },
+  "license": "MIT"
+}
