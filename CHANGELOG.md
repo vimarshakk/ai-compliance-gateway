@@ -14,6 +14,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - GitHub Actions CI/CD hardening
 - ADR process and initial ADRs
 
+### Changed
+- Rebuilt the Git history using the enterprise conventional-commit strategy.
+  - 417 tracked files replayed as **154 granular commits** across **76 feature branches**.
+  - Branch topology: `main` (production) ← `release/m1` ← `develop` ← `feature/m1-*`.
+  - All merges use `--no-ff` merge commits (no squashing) to preserve feature lineage.
+  - Tagged `v0.1.0` (Milestone 1 release) and `m1` (milestone marker) on `main`.
+  - Default branch is `main`; `develop` and `release/m1` are pushed to `origin`.
+
 ## [2.6.0] - 2024-12-XX
 
 ### Added
