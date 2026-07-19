@@ -1,0 +1,133 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: acg-redis
+  labels:
+    app: acg
+    component: redis
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: acg
+      component: redis
+  template:
+    metadata:
+      labels:
+        app: acg
+        component: redis
+    spec:
+      containers:
+        - name: redis
+          image: redis:7-alpine
+          ports:
+            - containerPort: 6379
+              protocol: TCP
+          livenessProbe:
+            exec:
+              command:
+                - redis-cli
+                - ping
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          readinessProbe:
+            exec:
+              command:
+                - redis-cli
+                - ping
+            initialDelaySeconds: 5
+            periodSeconds: 5
+          resources:
+            limits:
+              cpu: 250m
+              memory: 256Mi
+            requests:
+              cpu: 125m
+              memory: 128Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: acg-redis
+  labels:
+    app: acg
+    component: redis
+spec:
+  type: ClusterIP
+  ports:
+    - port: 6379
+      targetPort: 6379
+      protocol: TCP
+      name: redis
+  selector:
+    app: acg
+    component: redis
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: acg-nats
+  labels:
+    app: acg
+    component: nats
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: acg
+      component: nats
+  template:
+    metadata:
+      labels:
+        app: acg
+        component: nats
+    spec:
+      containers:
+        - name: nats
+          image: nats:2-alpine
+          ports:
+            - containerPort: 4222
+              protocol: TCP
+            - containerPort: 8222
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 8222
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 8222
+            initialDelaySeconds: 5
+            periodSeconds: 5
+          resources:
+            limits:
+              cpu: 250m
+              memory: 256Mi
+            requests:
+              cpu: 125m
+              memory: 128Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: acg-nats
+  labels:
+    app: acg
+    component: nats
+spec:
+  type: ClusterIP
+  ports:
+    - port: 4222
+      targetPort: 4222
+      protocol: TCP
+      name: nats
+    - port: 8222
+      targetPort: 8222
+      protocol: TCP
+      name: nats-monitoring
+  selector:
+    app: acg
+    component: nats

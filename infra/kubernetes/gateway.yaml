@@ -1,0 +1,79 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: acg-gateway
+  labels:
+    app: acg
+    component: gateway
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: acg
+      component: gateway
+  template:
+    metadata:
+      labels:
+        app: acg
+        component: gateway
+    spec:
+      containers:
+        - name: gateway
+          image: ghcr.io/acg-ai/acg-gateway:latest
+          ports:
+            - containerPort: 3000
+              protocol: TCP
+          env:
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: acg-secrets
+                  key: database-url
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: acg-secrets
+                  key: jwt-secret
+            - name: OPA_URL
+              value: "http://acg-opa:8181"
+            - name: NATS_URL
+              value: "nats://acg-nats:4222"
+            - name: REDIS_URL
+              value: "redis://acg-redis:6379"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 3000
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 3000
+            initialDelaySeconds: 5
+            periodSeconds: 5
+          resources:
+            limits:
+              cpu: 500m
+              memory: 512Mi
+            requests:
+              cpu: 250m
+              memory: 256Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: acg-gateway
+  labels:
+    app: acg
+    component: gateway
+spec:
+  type: ClusterIP
+  ports:
+    - port: 3000
+      targetPort: 3000
+      protocol: TCP
+      name: http
+  selector:
+    app: acg
+    component: gateway
