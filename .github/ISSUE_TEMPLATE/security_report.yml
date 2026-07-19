@@ -1,0 +1,55 @@
+name: Security Report
+description: Report a security vulnerability (use GitHub Security Advisories for private reports)
+title: "[Security]: "
+labels: ["security", "triage"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ⚠️ **For sensitive security issues, please use [GitHub Security Advisories](https://github.com/acg-ai/acg/security/advisories/new) instead.**
+
+        This template is for non-sensitive security discussions (e.g., security hardening, best practices).
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Security Issue Description
+      description: Describe the security concern.
+    validations:
+      required: true
+
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Severity
+      description: How severe is this issue?
+      options:
+        - Critical (remote code execution, data breach)
+        - High (privilege escalation, authentication bypass)
+        - Medium (information disclosure, DoS)
+        - Low (minor security improvement)
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact
+      description: What is the potential impact?
+
+  - type: textarea
+    id: mitigation
+    attributes:
+      label: Suggested Mitigation
+      description: Any suggestions for fixing this?
+
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Checklist
+      options:
+        - label: I have confirmed this is not already reported
+          required: true
+        - label: I understand this should be reported privately for critical/high issues
+          required: true

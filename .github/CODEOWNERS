@@ -1,0 +1,37 @@
+# Default owners for everything
+* @acg-ai/maintainers
+
+# Core engines
+/packages/ai-router/ @acg-ai/engine-team
+/packages/risk-engine/ @acg-ai/engine-team
+/packages/governance-engine/ @acg-ai/engine-team
+/packages/compliance-engine/ @acg-ai/engine-team
+/packages/kernel/ @acg-ai/platform-team
+
+# Infrastructure
+/infra/ @acg-ai/platform-team
+/docker-compose.yml @acg-ai/platform-team
+/.github/ @acg-ai/platform-team
+
+# Security
+SECURITY.md @acg-ai/security-team
+/packages/database/ @acg-ai/security-team
+
+# Documentation
+/docs/ @acg-ai/devrel
+*.md @acg-ai/devrel
+
+# Compliance
+/packages/enterprise-packs/ @acg-ai/compliance-team
+/packages/marketplace/ @acg-ai/compliance-team
+
+# CLI & SDK
+/packages/cli/ @acg-ai/sdk-team
+/packages/sdk/ @acg-ai/sdk-team
+/packages/mcp-server/ @acg-ai/sdk-team
+/packages/vscode/ @acg-ai/sdk-team
+
+# Applications
+/apps/gateway/ @acg-ai/platform-team
+/apps/admin/ @acg-ai/platform-team
+/apps/dashboard/ @acg-ai/frontend-team
