@@ -1,0 +1,39 @@
+{
+  "name": "ai-compliance-gateway",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Enterprise AI Compliance Gateway — orchestration over upstream OSS",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo run dev",
+    "test": "turbo run test",
+    "test:integration": "turbo run test:integration --filter=@acg/integration-tests",
+    "typecheck": "turbo run typecheck",
+    "clean": "turbo run clean",
+    "up": "docker compose --profile core --profile development up -d",
+    "up:full": "docker compose --profile core --profile enterprise --profile observability --profile ai-native up -d",
+    "up:dev": "docker compose --profile core --profile development up -d --build",
+    "down": "docker compose down -v",
+    "logs": "docker compose logs -f",
+    "lint": "turbo run lint",
+    "openapi": "turbo run openapi --filter=@acg/contracts"
+  },
+  "devDependencies": {
+    "@fastify/cors": "^11.0.0",
+    "@vitest/coverage-v8": "^3.2.7",
+    "eslint": "^9.18.0",
+    "fastify": "^5.3.0",
+    "prettier": "^3.4.0",
+    "turbo": "^2.4.0",
+    "typescript": "^5.7.0",
+    "vitest": "^3.2.7"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "packageManager": "pnpm@9.15.0"
+}
